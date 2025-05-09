@@ -1,0 +1,8 @@
+[
+    {
+      "origin": ["http://localhost:3000", "https://sithai-blogs.firebaseapp.com", "https://sithai-blogs.web.app"],
+      "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
+      "responseHeader": ["Content-Type", "Content-Length", "Content-Encoding", "X-Content-Type-Options"],
+      "maxAgeSeconds": 3600
+    }
+  ]
