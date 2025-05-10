@@ -24,6 +24,7 @@ export default function useBlogForm() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   // Fetch categories from Firestore for the dropdown
   useEffect(() => {
@@ -122,6 +123,11 @@ export default function useBlogForm() {
     }));
   };
 
+  // Function to close modal and reset form
+  const handleCloseModal = () => {
+    setIsSuccessModalOpen(false);
+  };
+
   // Function to save blog to Firestore
   const saveBlogToFirestore = async (blogData: BlogPost) => {
     try {
@@ -155,7 +161,8 @@ export default function useBlogForm() {
         (document.getElementById('imageInput') as HTMLInputElement).value = '';
       }
       
-      toast.success("வலைப்பதிவு வெற்றிகரமாக சேர்க்கப்பட்டது!");
+      // Show success modal instead of toast
+      setIsSuccessModalOpen(true);
       setLoading(false);
     } catch (error) {
       console.error("Error saving blog post to Firestore:", error);
@@ -262,8 +269,10 @@ export default function useBlogForm() {
     categories,
     isLoadingCategories,
     error,
+    isSuccessModalOpen,
     handleInputChange,
     handleImageChange,
-    handleSubmit
+    handleSubmit,
+    handleCloseModal
   };
 }
