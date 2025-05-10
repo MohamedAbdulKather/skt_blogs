@@ -60,7 +60,7 @@ export function CategoryDropdown({
       {/* Dropdown Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex justify-between items-center w-full bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500 font-serif"
+        className="flex justify-between items-center w-full bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded leading-tight focus:outline-none focus:bg-vlack focus:border-gray-500 font-serif"
       >
         <span>{getSelectedCategoryName()}</span>
         <svg className={`fill-current h-4 w-4 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} 
@@ -71,7 +71,7 @@ export function CategoryDropdown({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-10 w-full mt-1 bg-white border text-gray-700 border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
           {categoriesWithAll.map((category, index) => (
             <div
               key={category.id}
