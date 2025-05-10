@@ -7,7 +7,7 @@ import { ViewAllBlogs } from "@/app/Components/User/view-all";
 
 export default function HomePage() {
   return (
-    <div>
+    <div className="bg-white">
    <Navbar />
 <ViewAllBlogs />
       <Footer />

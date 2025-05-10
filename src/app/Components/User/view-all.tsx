@@ -214,6 +214,16 @@ export function ViewAllBlogs() {
     }
   };
 
+  // Go to first page
+  const goToFirstPage = () => {
+    setCurrentPage(1);
+  };
+  
+  // Go to last page
+  const goToLastPage = () => {
+    setCurrentPage(totalPages);
+  };
+
   return (
     <div className="flex min-h-screen ">
       {/* Main Content */}
@@ -334,20 +344,35 @@ export function ViewAllBlogs() {
             </div>
           )}
 
-          {/* Pagination */}
+          {/* Enhanced Pagination with First and Last buttons - Now aligned to the left */}
           {!isLoadingBlogs && filteredBlogs.length > blogsPerPage && (
-            <div className="flex justify-center mt-12">
+            <div className="flex justify-end mt-12">
               <nav className="flex items-center">
+                {/* First Page Button */}
+                <button 
+                  onClick={goToFirstPage}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-2 mx-1 rounded-md ${
+                    currentPage === 1 
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  } border border-gray-300`}
+                  aria-label="Go to first page"
+                >
+                  &laquo;
+                </button>
+                
+                {/* Previous Button */}
                 <button 
                   onClick={goToPreviousPage}
                   disabled={currentPage === 1}
-                  className={`px-4 py-2 mx-1 rounded-md ${
+                  className={`px-3 py-2 mx-1 rounded-md ${
                     currentPage === 1 
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                       : 'bg-white text-gray-700 hover:bg-gray-100'
                   } border border-gray-300`}
                 >
-                  Previous
+                  &lt;
                 </button>
                 
                 <div className="flex">
@@ -379,7 +404,7 @@ export function ViewAllBlogs() {
                           .includes(number - 1)
                       ) {
                         result.push(
-                          <span key={`ellipsis-before-${number}`} className="px-4 py-2 mx-1">
+                          <span key={`ellipsis-before-${number}`} className="px-3 py-2 mx-1">
                             ...
                           </span>
                         );
@@ -409,7 +434,7 @@ export function ViewAllBlogs() {
                           .includes(number + 1)
                       ) {
                         result.push(
-                          <span key={`ellipsis-after-${number}`} className="px-4 py-2 mx-1">
+                          <span key={`ellipsis-after-${number}`} className="px-3 py-2 mx-1">
                             ...
                           </span>
                         );
@@ -419,24 +444,39 @@ export function ViewAllBlogs() {
                     })}
                 </div>
                 
+                {/* Next Button */}
                 <button 
                   onClick={goToNextPage}
                   disabled={currentPage === totalPages}
-                  className={`px-4 py-2 mx-1 rounded-md ${
+                  className={`px-3 py-2 mx-1 rounded-md ${
                     currentPage === totalPages 
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                       : 'bg-white text-gray-700 hover:bg-gray-100'
                   } border border-gray-300`}
                 >
-                  Next
+                  &gt;
+                </button>
+                
+                {/* Last Page Button */}
+                <button 
+                  onClick={goToLastPage}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-2 mx-1 rounded-md ${
+                    currentPage === totalPages 
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  } border border-gray-300`}
+                  aria-label="Go to last page"
+                >
+                  &raquo;
                 </button>
               </nav>
             </div>
           )}
           
-          {/* Page info */}
+          {/* Page info - Also aligned to the left */}
           {!isLoadingBlogs && filteredBlogs.length > 0 && (
-            <div className="text-center mt-6 text-gray-500 text-sm">
+           <div className="text-right mt-3 text-black text-sm">
               Showing {indexOfFirstBlog + 1}-{Math.min(indexOfLastBlog, filteredBlogs.length)} of {filteredBlogs.length} articles
             </div>
           )}
