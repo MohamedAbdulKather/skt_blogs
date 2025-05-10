@@ -18,7 +18,7 @@ const Footer = () => {
         {/* Main banner image - full width and proper height for all devices */}
         <div className="w-full h-80 sm:h-96 md:h-96 lg:h-200 relative overflow-hidden">
           <Image
-            src="/image/f1.jpg"
+            src="/image/f1.JPG"
             alt="Misty forest landscape"
             fill
             sizes="100vw"
