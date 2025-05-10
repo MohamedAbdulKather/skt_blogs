@@ -32,6 +32,10 @@ export function ViewAllBlogs() {
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const blogsPerPage = 8;
 
   // Fetch categories
   useEffect(() => {
@@ -100,6 +104,7 @@ export function ViewAllBlogs() {
 
           setBlogs(blogsData);
           setFilteredBlogs(blogsData);
+          setCurrentPage(1); // Reset to first page whenever blogs change
         } catch (indexError) {
           console.error("Index error:", indexError);
 
@@ -134,6 +139,7 @@ export function ViewAllBlogs() {
 
             setBlogs(verifiedBlogs);
             setFilteredBlogs(verifiedBlogs);
+            setCurrentPage(1); // Reset to first page whenever blogs change
 
             // Set a specific error to guide the user to create indexes
             setError(
@@ -164,6 +170,7 @@ export function ViewAllBlogs() {
     } else {
       setFilteredBlogs(blogs);
     }
+    setCurrentPage(1); // Reset to first page whenever filters change
   }, [selectedCategory, blogs]);
 
   // Find category name by ID
@@ -184,8 +191,31 @@ export function ViewAllBlogs() {
     setSelectedCategory(value === "all" ? null : value);
   };
 
+  // Get current blogs for pagination
+  const indexOfLastBlog = currentPage * blogsPerPage;
+  const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
+  const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
+  const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
+
+  // Change page
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  
+  // Go to next page
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+  
+  // Go to previous page
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen ">
       {/* Main Content */}
       <div className="w-full">
         <div className="max-w-7xl mx-auto py-12 px-6 md:px-8">
@@ -256,10 +286,10 @@ export function ViewAllBlogs() {
           )}
 
           {/* Card Grid - 4 per row matching the design from the image */}
-          {!isLoadingBlogs && filteredBlogs.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
-              {filteredBlogs.map((blog) => (
-                <div key={blog.id} className="bg-white border border-black-200 shadow-sm hover:shadow-md transition-shadow">
+          {!isLoadingBlogs && currentBlogs.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4 bg-gray-100">
+              {currentBlogs.map((blog) => (
+                <div key={blog.id} className="bg-white mt-5 mb-5 border border-black-200 shadow-sm hover:shadow-md transition-shadow">
                   {/* Blog Image */}
                   <Link href={`/blog/${blog.slug}`}>
                     <div className="relative h-60 w-full overflow-hidden">
@@ -301,6 +331,113 @@ export function ViewAllBlogs() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {!isLoadingBlogs && filteredBlogs.length > blogsPerPage && (
+            <div className="flex justify-center mt-12">
+              <nav className="flex items-center">
+                <button 
+                  onClick={goToPreviousPage}
+                  disabled={currentPage === 1}
+                  className={`px-4 py-2 mx-1 rounded-md ${
+                    currentPage === 1 
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  } border border-gray-300`}
+                >
+                  Previous
+                </button>
+                
+                <div className="flex">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(num => {
+                      // Show current page, first page, last page, and pages around current page
+                      const maxPagesToShow = 5;
+                      if (totalPages <= maxPagesToShow) return true;
+                      
+                      if (
+                        num === 1 || 
+                        num === totalPages ||
+                        (num >= currentPage - 1 && num <= currentPage + 1)
+                      ) {
+                        return true;
+                      }
+                      return false;
+                    })
+                    .map(number => {
+                      // Insert ellipsis for gaps
+                      const result = [];
+                      if (
+                        number > 1 && 
+                        !Array.from({ length: totalPages }, (_, i) => i + 1)
+                          .filter(n => {
+                            if (totalPages <= 5) return true;
+                            return n === 1 || n === totalPages || (n >= currentPage - 1 && n <= currentPage + 1);
+                          })
+                          .includes(number - 1)
+                      ) {
+                        result.push(
+                          <span key={`ellipsis-before-${number}`} className="px-4 py-2 mx-1">
+                            ...
+                          </span>
+                        );
+                      }
+                      
+                      result.push(
+                        <button
+                          key={number}
+                          onClick={() => paginate(number)}
+                          className={`px-4 py-2 mx-1 rounded-md ${
+                            currentPage === number
+                              ? 'bg-gray-800 text-white'
+                              : 'bg-white text-gray-700 hover:bg-gray-100'
+                          } border border-gray-300`}
+                        >
+                          {number}
+                        </button>
+                      );
+                      
+                      if (
+                        number < totalPages && 
+                        !Array.from({ length: totalPages }, (_, i) => i + 1)
+                          .filter(n => {
+                            if (totalPages <= 5) return true;
+                            return n === 1 || n === totalPages || (n >= currentPage - 1 && n <= currentPage + 1);
+                          })
+                          .includes(number + 1)
+                      ) {
+                        result.push(
+                          <span key={`ellipsis-after-${number}`} className="px-4 py-2 mx-1">
+                            ...
+                          </span>
+                        );
+                      }
+                      
+                      return result;
+                    })}
+                </div>
+                
+                <button 
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`px-4 py-2 mx-1 rounded-md ${
+                    currentPage === totalPages 
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  } border border-gray-300`}
+                >
+                  Next
+                </button>
+              </nav>
+            </div>
+          )}
+          
+          {/* Page info */}
+          {!isLoadingBlogs && filteredBlogs.length > 0 && (
+            <div className="text-center mt-6 text-gray-500 text-sm">
+              Showing {indexOfFirstBlog + 1}-{Math.min(indexOfLastBlog, filteredBlogs.length)} of {filteredBlogs.length} articles
             </div>
           )}
         </div>

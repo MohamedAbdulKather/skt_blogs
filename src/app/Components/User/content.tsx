@@ -172,18 +172,19 @@ export function ViewBlogPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen ">
       {/* Main Content */}
       <div className="w-full">
         <div className="max-w-7xl mx-auto py-12 px-6 md:px-8">
-          {/* Hiking & Backpacking Heading */}
-          <div className="flex justify-between items-center mb-10">
-            <h1 className="text-4xl md:text-5xl font-serif text-gray-800 tracking-wider">
+          {/* Hiking & Backpacking Heading - Modified for centered heading on mobile */}
+          <div className="flex flex-col md:flex-row md:justify-between items-center mb-10">
+            <h1 className="text-4xl md:text-5xl font-serif text-gray-800 tracking-wider text-center md:text-left mb-4 md:mb-0">
               Blogs
             </h1>
+            {/* View More link in header (visible only on desktop) */}
             <Link 
               href="/dashboard"
-              className="text-gray-800 hover:underline font-medium"
+              className="text-gray-800 underline hover:underline font-medium hidden md:block"
             >
               View More
             </Link>
@@ -232,9 +233,9 @@ export function ViewBlogPage() {
 
           {/* Card Grid - 4 per row matching the design from the image */}
           {!isLoadingBlogs && filteredBlogs.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4  bg-gray-100 ">
               {filteredBlogs.map((blog) => (
-                <div key={blog.id} className="bg-white border border-black-200 shadow-sm hover:shadow-md transition-shadow">
+                <div key={blog.id} className="bg-white mt-5 mb-5 border border-black shadow-sm hover:shadow-md transition-shadow">
                   {/* Blog Image */}
                   <Link href={`/blog/${blog.slug}`}>
                     <div className="relative h-60 w-full overflow-hidden">
@@ -246,7 +247,7 @@ export function ViewBlogPage() {
                           className="object-cover"
                         />
                       ) : (
-                        <div className="h-full w-full bg-white flex items-center justify-center border-b border-gray-200">
+                        <div className="h-full w-full bg-white flex items-center justify-center border-black">
                           <div className="text-center p-4">
                             <div className="w-16 h-16 mx-auto mb-2">
                               
@@ -276,6 +277,18 @@ export function ViewBlogPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+          
+          {/* View More link below cards (visible only on mobile) */}
+          {!isLoadingBlogs && filteredBlogs.length > 0 && (
+            <div className="flex justify-center mt-8 md:hidden">
+              <Link 
+                href="/dashboard"
+                className="underline text-black-800 hover:underline font-medium"
+              >
+                View More
+              </Link>
             </div>
           )}
         </div>
