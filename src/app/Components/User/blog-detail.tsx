@@ -296,6 +296,17 @@ export default function BlogDetailPage() {
               <div className="prose prose-slate max-w-none text-gray-800 leading-relaxed font-serif break-words overflow-hidden">
                 {formatContent(blog.content)}
               </div>
+              
+              {/* Bottom Back Button - Inside the Card */}
+              <div className="flex justify-end mt-10 pt-6 border-t border-gray-200">
+                <button
+                  onClick={handleBack}
+                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-300 font-serif"
+                >
+                  <ArrowLeft className="h-5 w-5 mr-2" />
+                  Back to Blogs
+                </button>
+              </div>
             </div>
           </div>
         )}
