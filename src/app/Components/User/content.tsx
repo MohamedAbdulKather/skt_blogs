@@ -25,14 +25,36 @@ interface BlogPost {
 
 export function ViewBlogPage() {
   // State for blogs and categories
-  const [, setRecentBlogs] = useState<BlogPost[]>([]);
+  const [recentBlogs, setRecentBlogs] = useState<BlogPost[]>([]);
   const [filteredBlogs, setFilteredBlogs] = useState<BlogPost[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingBlogs, setIsLoadingBlogs] = useState(true);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [displayCount, setDisplayCount] = useState(8); // Default to mobile count
 
-  // Fetch categori
+  // Detect screen size and set display count accordingly
+  useEffect(() => {
+    const handleResize = () => {
+      // Use md breakpoint (768px) as the threshold
+      if (window.innerWidth >= 768) {
+        setDisplayCount(20); // Desktop/laptop
+      } else {
+        setDisplayCount(8); // Mobile
+      }
+    };
+
+    // Set initial value
+    handleResize();
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Fetch categories
   useEffect(() => {
     setIsLoadingCategories(true);
 
@@ -67,7 +89,7 @@ export function ViewBlogPage() {
     }
   }, []);
 
-  // Fetch the latest blogs
+  // Fetch the latest blogs - modified to fetch based on displayCount
   useEffect(() => {
     const fetchRecentBlogs = async () => {
       setIsLoadingBlogs(true);
@@ -78,7 +100,7 @@ export function ViewBlogPage() {
             collection(db, "blogs"),
             where("isVerified", "==", true),
             orderBy("createdAt", "desc"),
-            limit(8)
+            limit(displayCount)
           );
 
           const querySnapshot = await getDocs(q);
@@ -107,10 +129,13 @@ export function ViewBlogPage() {
           if (indexError instanceof Error && indexError.message.includes("requires an index")) {
             console.log("Falling back to simpler query without compound index requirement");
 
+            // Fetch more to ensure we have enough after client-side filtering
+            const fallbackLimit = displayCount + 10;
+            
             const fallbackQ = query(
               collection(db, "blogs"),
               orderBy("createdAt", "desc"),
-              limit(20) // Get more to filter client-side
+              limit(fallbackLimit)
             );
 
             const fallbackSnapshot = await getDocs(fallbackQ);
@@ -130,8 +155,10 @@ export function ViewBlogPage() {
               });
             });
 
-            // Filter verified blogs client-side
-            const verifiedBlogs = allBlogsData.filter(blog => blog.isVerified).slice(0, 8);
+            // Filter verified blogs client-side and take the required amount
+            const verifiedBlogs = allBlogsData
+              .filter(blog => blog.isVerified)
+              .slice(0, displayCount);
 
             setRecentBlogs(verifiedBlogs);
             setFilteredBlogs(verifiedBlogs);
@@ -157,7 +184,7 @@ export function ViewBlogPage() {
     };
 
     fetchRecentBlogs();
-  }, []);
+  }, [displayCount]); // Re-fetch when displayCount changes
 
   // Find category name by ID
   const getCategoryName = (categoryId: string) => {
@@ -172,19 +199,19 @@ export function ViewBlogPage() {
   };
 
   return (
-    <div className="flex min-h-screen ">
+    <div className="flex min-h-screen">
       {/* Main Content */}
       <div className="w-full">
         <div className="max-w-7xl mx-auto py-12 px-6 md:px-8">
-          {/* Hiking & Backpacking Heading - Modified for centered heading on mobile */}
+          {/* Blog Heading with View More link */}
           <div className="flex flex-col md:flex-row md:justify-between items-center mb-10">
             <h1 className="text-4xl md:text-5xl font-serif text-gray-800 tracking-wider text-center md:text-left mb-4 md:mb-0">
               Blogs
             </h1>
-            {/* View More link in header (visible only on desktop) */}
+            {/* View More link in header - right aligned (visible only on desktop) */}
             <Link
               href="/dashboard"
-              className="text-gray-800 underline hover:underline font-medium hidden md:block"
+              className="text-gray-800 underline hover:text-gray-600 font-medium transition-colors hidden md:block"
             >
               View More
             </Link>
@@ -233,7 +260,7 @@ export function ViewBlogPage() {
 
           {/* Card Grid - 4 per row matching the design from the image */}
           {!isLoadingBlogs && filteredBlogs.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4  bg-gray-100 ">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4 bg-gray-100">
               {filteredBlogs.map((blog) => (
                 <div key={blog.id} className="bg-white mt-5 mb-5 border border-black shadow-sm hover:shadow-md transition-shadow">
                   {/* Blog Image */}
@@ -271,7 +298,7 @@ export function ViewBlogPage() {
                     </Link>
 
                     <p
-                      className="text-gray-700 mb-5 line-clamp-3 text-base"
+                      className="text-gray-700 mb-5 line-clamp-10 text-base"
                       style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
                     >
                       {truncateContent(blog.content, 150)}
@@ -291,7 +318,7 @@ export function ViewBlogPage() {
             <div className="flex justify-center mt-8 md:hidden">
               <Link
                 href="/dashboard"
-                className="underline text-black-800 hover:underline font-medium"
+                className="text-gray-800 underline hover:text-gray-600 font-medium transition-colors"
               >
                 View More
               </Link>

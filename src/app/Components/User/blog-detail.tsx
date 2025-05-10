@@ -191,22 +191,27 @@ export default function BlogDetailPage() {
         {!isLoading && blog && (
           <div className="max-w-4xl mx-auto px-4 md:px-6 pb-10">
             {/* Featured Image Container */}
-            <div className="relative w-full h-64 md:h-80 bg-white rounded-t-lg shadow-lg overflow-hidden mb-0">
+            <div className="relative w-full bg-white rounded-t-lg shadow-lg overflow-hidden mb-0">
               {blog.imageUrl ? (
-                <>
+                <div className="relative w-full h-auto">
+                  {/* Using Image component with responsive sizing */}
                   <Image
                     src={blog.imageUrl}
                     alt={blog.title}
-                    fill
-                    className="object-cover"
+                    width={1200}
+                    height={675}
+                    className="w-full h-auto object-contain"
                     priority
+                    style={{
+                      maxHeight: '500px',
+                      objectFit: 'contain'
+                    }}
                   />
-                  <div className="absolute inset-0 bg-black opacity-10"></div>
-                </>
+                </div>
               ) : (
                 // Attractive image placeholder when no image is available
                 <div 
-                  className="absolute inset-0 flex items-center justify-center overflow-hidden"
+                  className="relative w-full h-64 md:h-80 flex items-center justify-center overflow-hidden"
                   style={{
                     background: blog.title ? 
                       `linear-gradient(135deg, ${generatePlaceholderColors(blog.title).primary}, ${generatePlaceholderColors(blog.title).secondary})` : 
