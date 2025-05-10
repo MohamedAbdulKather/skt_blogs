@@ -32,7 +32,7 @@ const BlogForm: React.FC<BlogFormProps> = ({
   handleImageChange,
   handleSubmit
 }) => {
-  const [sidebarExpanded, setSidebarExpanded] = useState<boolean>(false);
+  const [sidebarExpanded] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(1);
 
 
