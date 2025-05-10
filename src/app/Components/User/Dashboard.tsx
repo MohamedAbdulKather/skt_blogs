@@ -47,12 +47,18 @@ export default function ImagePage() {
                     )}
                 </div>
 
-                {/* Mobile-only SITHAI BLOG title */}
+                {/* Mobile-only logo image instead of text */}
                 {isMobile && (
                     <div className="md:hidden w-full bg-white py-4 text-center border-t border-gray-200">
-                        <h2 className="text-2xl font-serif text-gray-800 tracking-wider">
-                            SITHAI THULIGAL
-                        </h2>
+                        <div className="relative h-15 w-40 mx-auto">
+                            <Image 
+                                src="/image/navbar.jpg" 
+                                alt="சித்தை துளிகள் - Sithai Thuligal" 
+                                fill
+                                style={{ objectFit: 'contain' }}
+                                priority
+                            />
+                        </div>
                     </div>
                 )}
             </div>

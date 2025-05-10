@@ -25,6 +25,7 @@ const Footer = () => {
             style={{ objectFit: 'cover', objectPosition: 'center center' }}
             className="opacity-90 w-full"
             priority
+            unoptimized={process.env.NODE_ENV === 'production'}
           />
         </div>
       </div>
@@ -36,13 +37,13 @@ const Footer = () => {
           <h3 className="text-lg font-semibold mb-4 sm:mb-6 text-orange-400">Quick Links</h3>
           <nav className="flex flex-col space-y-3 sm:space-y-4">
             <Link href="/" className="text-white hover:text-orange-400 transition-colors duration-300 flex items-center">
-              <span className="mr-2">›</span> Home
+              <span className="mr-2"></span> Home
             </Link>
             <Link href="/dashboard" className="text-white hover:text-orange-400 transition-colors duration-300 flex items-center">
-              <span className="mr-2">›</span> Categories
+              <span className="mr-2"></span> Categories
             </Link>
             <Link href="/contactus" className="text-white hover:text-orange-400 transition-colors duration-300 flex items-center">
-              <span className="mr-2">›</span> Contact Us
+              <span className="mr-2"></span> Contact Us
             </Link>
           </nav>
         </div>
