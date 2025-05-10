@@ -25,7 +25,7 @@ interface BlogPost {
 
 export function ViewBlogPage() {
   // State for blogs and categories
-  const [recentBlogs, setRecentBlogs] = useState<BlogPost[]>([]);
+  const [, setRecentBlogs] = useState<BlogPost[]>([]);
   const [filteredBlogs, setFilteredBlogs] = useState<BlogPost[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingBlogs, setIsLoadingBlogs] = useState(true);
