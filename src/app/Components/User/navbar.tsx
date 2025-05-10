@@ -23,15 +23,16 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className={`w-full ${scrolled ? 'bg-white shadow-md' : 'bg-white'} transition-all duration-300 ease-in-out  top-0 z-50`}>
+    <nav className={`w-full ${scrolled ? 'bg-white shadow-md' : 'bg-white'} transition-all duration-300 ease-in-out top-0 z-50`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-center py-8">
+        {/* Desktop header with blog name */}
+        <div className="hidden md:flex justify-center py-8">
           <h1 className="text-4xl md:text-5xl font-serif text-gray-800 tracking-wider">
-            SITHAI BLOG
+            SITHAI THULIGAL
           </h1>
         </div>
         
-        <div className="border-t  border-gray-200 ">
+        <div className="border-t border-gray-200">
           {/* Desktop menu */}
           <div className="hidden md:flex justify-center space-x-16 py-4 text-gray-700">
             <Link href="/">
@@ -45,16 +46,16 @@ const Navbar = () => {
             </Link>
           </div>
           
-          {/* Mobile menu button */}
+          {/* Mobile menu button - enlarged and centered */}
           <div className="md:hidden flex items-center justify-between py-4">
-            <div className="flex items-center">
+            <div className="flex-1">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="text-gray-700 focus:outline-none"
+                className="text-gray-800 focus:outline-none"
                 aria-label="Toggle menu"
               >
                 <svg
-                  className="h-6 w-6"
+                  className="h-8 w-8" 
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -78,6 +79,10 @@ const Navbar = () => {
                 </svg>
               </button>
             </div>
+            
+            
+            {/* Empty div to balance the layout */}
+            <div className="flex-1"></div>
           </div>
           
           {/* Mobile menu dropdown */}
@@ -87,10 +92,10 @@ const Navbar = () => {
                 <Link href="/">
                   <span className="text-gray-700 hover:text-gray-900 px-4 py-2 font-medium block">Home</span>
                 </Link>
-                <Link href="/blog">
-                  <span className="text-gray-700 hover:text-gray-900 px-4 py-2 font-medium block">Blog</span>
+                <Link href="/dashboard">
+                  <span className="text-gray-700 hover:text-gray-900 px-4 py-2 font-medium block">Categories</span>
                 </Link>
-                <Link href="/contact">
+                <Link href="/contactus">
                   <span className="text-gray-700 hover:text-gray-900 px-4 py-2 font-medium block">Contact Us</span>
                 </Link>
               </div>
