@@ -179,7 +179,7 @@ export function ViewBlogPage() {
           {/* Hiking & Backpacking Heading - Modified for centered heading on mobile */}
           <div className="flex flex-col md:flex-row md:justify-between items-center mb-10">
             <h1 className="text-4xl md:text-5xl font-serif text-gray-800 tracking-wider text-center md:text-left mb-4 md:mb-0">
-              Blogs
+              வலைப்பதிவுகள்
             </h1>
             {/* View More link in header (visible only on desktop) */}
             <Link
