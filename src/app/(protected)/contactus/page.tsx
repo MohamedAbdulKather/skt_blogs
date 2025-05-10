@@ -7,7 +7,7 @@ import Navbar from "@/app/Components/User/navbar";
 
 export default function HomePage() {
   return (
-    <div>
+    <div className="bg-white">
       <Navbar />
       <Contact />
       <Footer />

@@ -37,8 +37,7 @@ export default function BlogDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [sidebarExpanded] = useState<boolean>(false);
   
-
-
+  
   // Fetch blog post data by slug
   useEffect(() => {
     const fetchBlogPost = async () => {
