@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -6,14 +5,17 @@ import { useState, useEffect } from 'react';
 
 export default function ImagePage() {
     const [windowWidth, setWindowWidth] = useState(0);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
-        // Set initial width
+        // Set initial width and check if mobile
         setWindowWidth(window.innerWidth);
+        setIsMobile(window.innerWidth < 768); // 768px is standard md breakpoint
 
         // Update width on resize
         const handleResize = () => {
             setWindowWidth(window.innerWidth);
+            setIsMobile(window.innerWidth < 768);
         };
 
         window.addEventListener('resize', handleResize);
@@ -22,20 +24,20 @@ export default function ImagePage() {
 
     return (
         <div className="relative w-full">
-            {/* Using a container with padding to ensure the image doesn't touch the edges on mobile */}
-            <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 mt-3">
-                {/* Responsive image container with aspect ratio */}
-                <div className="relative w-full h-auto overflow-hidden rounded-lg shadow-lg">
+            {/* Full width image container with no padding */}
+            <div className="w-full">
+                {/* Responsive image container with no rounded corners or extra padding */}
+                <div className="relative w-full h-auto overflow-hidden">
                     {/* For larger screens, use the Image component with priority and sizes */}
                     {windowWidth > 0 && (
                         <Image
-                            src="/image/dash.jpg"
+                            src="/image/dash1.jpg"
                             alt="Camping scene with tent and mountain view at sunset"
                             width={1920}
-                            height={1080}
+                            height={1000}
                             priority={true}
                             className="w-full h-auto object-cover"
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1200px"
+                            sizes="100vw"
                         />
                     )}
 
@@ -45,6 +47,14 @@ export default function ImagePage() {
                     )}
                 </div>
 
+                {/* Mobile-only SITHAI BLOG title */}
+                {isMobile && (
+                    <div className="md:hidden w-full bg-white py-4 text-center border-t border-gray-200">
+                        <h2 className="text-2xl font-serif text-gray-800 tracking-wider">
+                            SITHAI THULIGAL
+                        </h2>
+                    </div>
+                )}
             </div>
         </div>
     );
