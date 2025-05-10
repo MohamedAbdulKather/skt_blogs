@@ -5,6 +5,7 @@ import { collection, query, orderBy, getDocs, where, onSnapshot } from 'firebase
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import Image from "next/image";
+import { CategoryDropdown } from './CategoryDropdown'; // Import the new component
 
 // Define types
 interface Category {
@@ -186,8 +187,7 @@ export function ViewAllBlogs() {
   };
 
   // Handle category selection change
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
+  const handleCategoryChange = (value: string) => {
     setSelectedCategory(value === "all" ? null : value);
   };
 
@@ -236,30 +236,15 @@ export function ViewAllBlogs() {
             </h1>
           </div>
 
-          {/* Category Filter Dropdown */}
-          {!isLoadingCategories && categories.length > 0 && (
-            <div className="mb-8">
-              <div className="relative w-full md:w-64">
-                <select
-                  value={selectedCategory || "all"}
-                  onChange={handleCategoryChange}
-                  className="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500 font-serif"
-                >
-                  <option value="all">All Categories</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Category Filter Dropdown - Now using the new component */}
+          <div className="mb-8">
+            <CategoryDropdown
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onChange={handleCategoryChange}
+              isLoading={isLoadingCategories}
+            />
+          </div>
 
           {/* Error Message */}
           {error && (
@@ -476,7 +461,7 @@ export function ViewAllBlogs() {
           
           {/* Page info - Also aligned to the left */}
           {!isLoadingBlogs && filteredBlogs.length > 0 && (
-           <div className="text-right mt-3 text-black text-sm">
+           <div className="text-right mt-3 text-black-500 text-sm">
               Showing {indexOfFirstBlog + 1}-{Math.min(indexOfLastBlog, filteredBlogs.length)} of {filteredBlogs.length} articles
             </div>
           )}
