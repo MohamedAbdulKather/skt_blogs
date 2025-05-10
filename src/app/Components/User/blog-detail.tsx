@@ -119,7 +119,7 @@ export default function BlogDetailPage() {
   // Format content with paragraphs
   const formatContent = (content: string) => {
     return content.split('\n').map((paragraph, index) => (
-      <p key={index} className="mb-4 font-serif text-gray-800">
+      <p key={index} className="mb-4 font-serif text-gray-800 break-words">
         {paragraph}
       </p>
     ));
@@ -146,7 +146,7 @@ export default function BlogDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-serif">
+    <div className="min-h-screen bg-gray-50 font-serif overflow-x-hidden">
       {/* Navbar Component */}
       <Navbar />
       
@@ -165,27 +165,31 @@ export default function BlogDetailPage() {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="max-w-4xl mx-auto flex justify-center items-center h-64 bg-white rounded-lg shadow-lg p-6">
-            <div className="text-gray-600 font-serif">Loading blog post...</div>
+          <div className="max-w-4xl mx-auto px-4 md:px-6">
+            <div className="flex justify-center items-center h-64 bg-white rounded-lg shadow-lg p-6">
+              <div className="text-gray-600 font-serif">Loading blog post...</div>
+            </div>
           </div>
         )}
 
         {/* Error Message */}
         {error && (
-          <div className="max-w-4xl mx-auto bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg shadow-md font-serif">
-            <p>{error}</p>
-            <button
-              onClick={handleBack}
-              className="mt-2 text-red-700 underline hover:text-red-900 font-serif"
-            >
-              Return to blogs
-            </button>
+          <div className="max-w-4xl mx-auto px-4 md:px-6">
+            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg shadow-md font-serif">
+              <p className="break-words">{error}</p>
+              <button
+                onClick={handleBack}
+                className="mt-2 text-red-700 underline hover:text-red-900 font-serif"
+              >
+                Return to blogs
+              </button>
+            </div>
           </div>
         )}
 
         {/* Blog Post Content */}
         {!isLoading && blog && (
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto px-4 md:px-6 pb-10">
             {/* Featured Image Container */}
             <div className="relative w-full h-64 md:h-80 bg-white rounded-t-lg shadow-lg overflow-hidden mb-0">
               {blog.imageUrl ? (
@@ -236,7 +240,7 @@ export default function BlogDetailPage() {
                     {/* Title overlay for placeholder */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="bg-white bg-opacity-80 px-6 py-4 rounded-lg shadow-lg max-w-md text-center">
-                        <h2 className="text-xl font-medium text-gray-800 truncate">
+                        <h2 className="text-xl font-medium text-gray-800 break-words">
                           {blog.title}
                         </h2>
                         {category && (
@@ -265,7 +269,7 @@ export default function BlogDetailPage() {
               </div>
               
               {/* Blog Title - Centered */}
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center font-serif">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center font-serif break-words">
                 {blog.title}
               </h1>
               
@@ -284,7 +288,7 @@ export default function BlogDetailPage() {
               </div>
               
               {/* Blog Content - Serif Font */}
-              <div className="prose max-w-none text-gray-800 leading-relaxed font-serif">
+              <div className="prose prose-slate max-w-none text-gray-800 leading-relaxed font-serif break-words overflow-hidden">
                 {formatContent(blog.content)}
               </div>
             </div>

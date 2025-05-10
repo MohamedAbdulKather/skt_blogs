@@ -182,7 +182,7 @@ export function ViewBlogPage() {
               Blogs
             </h1>
             {/* View More link in header (visible only on desktop) */}
-            <Link 
+            <Link
               href="/dashboard"
               className="text-gray-800 underline hover:underline font-medium hidden md:block"
             >
@@ -250,7 +250,7 @@ export function ViewBlogPage() {
                         <div className="h-full w-full bg-white flex items-center justify-center border-black">
                           <div className="text-center p-4">
                             <div className="w-16 h-16 mx-auto mb-2">
-                              
+
                             </div>
                             <p className="text-gray-400 text-sm">Image not available</p>
                           </div>
@@ -262,15 +262,21 @@ export function ViewBlogPage() {
                   {/* Blog Content - Matching the design from the image */}
                   <div className="p-8">
                     <Link href={`/blog/${blog.slug}`}>
-                      <h2 className="text-2xl font-serif font-bold text-gray-800 mb-4 hover:underline">
+                      <h2
+                        className="text-2xl font-serif font-bold text-gray-800 mb-4 hover:underline"
+                        style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                      >
                         {blog.title}
                       </h2>
                     </Link>
 
-                    <p className="text-gray-700 mb-5 line-clamp-3 text-base">
+                    <p
+                      className="text-gray-700 mb-5 line-clamp-3 text-base"
+                      style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                    >
                       {truncateContent(blog.content, 150)}
                     </p>
-                    
+
                     <span className="text-sm text-green-700 font-medium">
                       {getCategoryName(blog.categoryId)}
                     </span>
@@ -279,11 +285,11 @@ export function ViewBlogPage() {
               ))}
             </div>
           )}
-          
+
           {/* View More link below cards (visible only on mobile) */}
           {!isLoadingBlogs && filteredBlogs.length > 0 && (
             <div className="flex justify-center mt-8 md:hidden">
-              <Link 
+              <Link
                 href="/dashboard"
                 className="underline text-black-800 hover:underline font-medium"
               >
