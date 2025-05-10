@@ -29,7 +29,7 @@ const Navbar = () => {
         {/* Desktop header with blog logo */}
         <div className="hidden md:flex justify-center py-4">
           <Link href="/">
-            <div className="relative h-15 w-64">
+            <div className="relative h-20 w-96">
               <Image 
                 src="/image/navbar.jpg" 
                 alt="சித்தை துளிகள் - Sithai Thuligal" 
@@ -42,25 +42,31 @@ const Navbar = () => {
         </div>
         
         <div className="border-t border-gray-200">
-          {/* Desktop menu with inline Add Blog button */}
-          <div className="hidden md:flex justify-center items-center space-x-12 py-4 text-gray-700">
-            <Link href="/">
-              <span className="text-gray-700 hover:text-gray-900 px-3 py-2 font-medium">Home</span>
-            </Link>
-            <Link href="/dashboard">
-              <span className="text-gray-700 hover:text-gray-900 px-3 py-2 font-medium">Categories</span>
-            </Link>
-            <Link href="/contactus">
-              <span className="text-gray-700 hover:text-gray-900 px-3 py-2 font-medium">Contact Us</span>
-            </Link>
-            <Link href="/add-blog">
-              <span className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-                </svg>
-                Add Blog
-              </span>
-            </Link>
+          {/* Desktop menu with Add Blog button in right corner */}
+          <div className="hidden md:flex items-center py-4 text-gray-700">
+            <div className="flex-1 flex justify-center space-x-12">
+              <Link href="/">
+                <span className="text-gray-700 hover:text-gray-900 px-3 py-2 font-medium">Home</span>
+              </Link>
+              <Link href="/dashboard">
+                <span className="text-gray-700 hover:text-gray-900 px-3 py-2 font-medium">Categories</span>
+              </Link>
+              <Link href="/contactus">
+                <span className="text-gray-700 hover:text-gray-900 px-3 py-2 font-medium">Contact Us</span>
+              </Link>
+            </div>
+            
+            {/* Add Blog button positioned at right */}
+            <div className="flex-none">
+              <Link href="/add-blog">
+                <span className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                  Add Blog
+                </span>
+              </Link>
+            </div>
           </div>
           
           {/* Mobile view with logo and menu button */}

@@ -50,10 +50,11 @@ const Footer = () => {
         
         {/* About Column - full width on mobile, then 1/3 */}
         <div className="w-full md:w-1/3 mb-8 md:mb-0">
-          <h3 className="text-lg font-semibold mb-4 sm:mb-6 text-orange-400">About Us</h3>
+          <h3 className="text-lg font-semibold mb-4 sm:mb-6 text-orange-400">About Us</h3>         
+          <h3 className="text-lg font-semibold mb-4 sm:mb-6 text-orange-400"> சித்தை துளிகள்</h3>
           <p className="text-gray-300 mb-4">
-            SITHAI BLOG shares our passion for exploration, adventure, and the beauty of untouched nature.
-            Join us as we traverse mountains, forests, and scenic roads.
+            ஒருவரின் அனுபவம் மற்றவருக்கு ஒளி. சித்தை துளிகள் வழியாக கல்வி, சமூகம்,
+            சிந்தனைகள், நல்லிணக்கம், ஊக்கம், வாழ்க்கைப் பாடங்களை பகிர்ந்துகொள்வோம்.
           </p>
         </div>
         

@@ -33,7 +33,7 @@ export default function ImagePage() {
                         <Image
                             src="/image/dash1.jpg"
                             alt="Camping scene with tent and mountain view at sunset"
-                            width={1920}
+                            width={1950}
                             height={1000}
                             priority={true}
                             className="w-full h-auto object-cover"
@@ -50,7 +50,7 @@ export default function ImagePage() {
                 {/* Mobile-only logo image instead of text */}
                 {isMobile && (
                     <div className="md:hidden w-full bg-white py-4 text-center border-t border-gray-200">
-                        <div className="relative h-15 w-40 mx-auto">
+                        <div className="relative h-16 w-55 mx-auto">
                             <Image 
                                 src="/image/navbar.jpg" 
                                 alt="சித்தை துளிகள் - Sithai Thuligal" 

@@ -30,7 +30,7 @@ export default function Contact(): JSX.Element {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-900">Email</p>
-                  <a href="mailto:contact@sithaiblog.com" className="text-gray-600 hover:text-gray-900">zendevtechnologies@gmail.com</a>
+                  <a href="mailto:contact@sithaiblog.com" className="text-gray-600 hover:text-gray-900">sithaithuligal@gmail.com</a>
                 </div>
               </div>
               
@@ -42,7 +42,7 @@ export default function Contact(): JSX.Element {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-900">Phone</p>
-                  <a href="tel:+91 93607 73040" className="text-gray-600 hover:text-gray-900">+91 93607 73040</a>
+                  <a href="tel:+91 93607 73040" className="text-gray-600 hover:text-gray-900">+91 78713 31663</a>
                 </div>
               </div>
               
