@@ -34,10 +34,7 @@ const BlogForm: React.FC<BlogFormProps> = ({
 }) => {
   const [sidebarExpanded, setSidebarExpanded] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(1);
-  
-  const handleSidebarExpand = (expanded: boolean) => {
-    setSidebarExpanded(expanded);
-  };
+
 
   const nextStep = () => {
     if ((activeStep === 1 && formState.title) || 
