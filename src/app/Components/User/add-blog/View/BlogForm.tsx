@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from 'next/link';
 import { Category } from '../model/add-blog';
 
-
 interface BlogFormProps {
   formState: {
     title: string;
@@ -34,11 +33,12 @@ const BlogForm: React.FC<BlogFormProps> = ({
 }) => {
   const [sidebarExpanded] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(1);
+  const [submitted, setSubmitted] = useState<boolean>(false);
 
   const nextStep = () => {
-    if ((activeStep === 1 && formState.title) || 
-        (activeStep === 2 && formState.categoryId) || 
-        activeStep === 3) {
+    if ((activeStep === 1 && formState.title) ||
+      (activeStep === 2 && formState.categoryId) ||
+      activeStep === 3) {
       setActiveStep(prev => Math.min(prev + 1, 4));
     }
   };
@@ -47,14 +47,79 @@ const BlogForm: React.FC<BlogFormProps> = ({
     setActiveStep(prev => Math.max(prev - 1, 1));
   };
 
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleSubmit(e);
+    setSubmitted(true);
+  };
+
+  if (submitted) {
+    return (
+      <div className="flex min-h-screen relative">
+        {/* Background Image with overlay gradient */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/image/addblog.jpg"
+            alt="Background"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-600/10"></div>
+        </div>
+
+        {/* Main Content */}
+        <div className={`transition-all duration-300 w-full ${sidebarExpanded ? 'ml-64' : 'ml-0 sm:ml-16'} relative z-10`}>
+          <div className="max-w-5xl mx-auto py-3 sm:py-6 px-3 sm:px-6 mt-60 sm:mt-40">
+            {/* Glass morphism effect with increased transparency */}
+            <div className="bg-white/10 backdrop-blur-sm p-3 sm:p-8 rounded-2xl shadow-xl border border-white/20 overflow-hidden relative">
+              {/* Decorative elements with reduced opacity */}
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-blue-300/10 to-indigo-500/10 rounded-full"></div>
+              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-tr from-indigo-300/10 to-purple-500/10 rounded-full"></div>
+
+              {/* Success Message */}
+              <div className="text-center py-8 sm:py-12 ">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-green-100/80 backdrop-blur-md">
+                  <svg className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="mt-4 text-lg sm:text-4xl font-bold text-green-800 font-sans ">Thank you for your submission!</h3>
+                <h4 className="mt-1 text-sm sm:text-2xl text-green-800 font-sans font-bold">உங்கள் அனுப்புதலுக்கு நன்றி!</h4>
+                <p className="mt-4 text-sm sm:text-base text-green-800 font-sans ">
+                  Your post will be published upon approval shortly.
+                </p>
+                <div className="mt-8">
+                  <Link
+                    href="/"
+                    className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 border border-transparent text-sm sm:text-base font-sans font-bold rounded-xl shadow-sm text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Back to Home
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+                    </svg>
+                  </Link>
+                </div>
+              </div>
+
+
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen relative">
       {/* Background Image with overlay gradient */}
       <div className="absolute inset-0 z-0">
-        <Image 
-          src="/image/add-bg.jpg" 
-          alt="Background" 
-          fill 
+        <Image
+          src="/image/addblog.jpg"
+          alt="Background"
+          fill
           className="object-cover"
           priority
         />
@@ -63,17 +128,17 @@ const BlogForm: React.FC<BlogFormProps> = ({
       </div>
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 w-full ${sidebarExpanded ? 'ml-64' : 'ml-0 sm:ml-16'} relative z-10`}> 
-        <div className="max-w-5xl mx-auto py-3 sm:py-6 px-3 sm:px-6">
+      <div className={`transition-all duration-300 w-full ${sidebarExpanded ? 'ml-64' : 'ml-0 sm:ml-16'} relative z-10`}>
+        <div className="max-w-5xl mx-auto py-3 sm:py-6 px-3 sm:px-6 mt-60 sm:mt-40">
           {/* Glass morphism effect with increased transparency */}
           <div className="bg-white/10 backdrop-blur-sm p-3 sm:p-8 rounded-2xl shadow-xl border border-white/20 overflow-hidden relative">
             {/* Decorative elements with reduced opacity */}
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-blue-300/10 to-indigo-500/10 rounded-full"></div>
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-tr from-indigo-300/10 to-purple-500/10 rounded-full"></div>
-            
+
             {/* Header with bilingual title and gradient underline */}
-            <div className="relative mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-3xl font-bold text-gray-800">Add New Blog</h2>
+            <div className="relative mb-4 sm:mb-6 ">
+              <h2 className="text-xl sm:text-3xl font-bold text-white">Add New Blog</h2>
               <p className="text-sm sm:text-lg text-indigo-700 mt-1">புதிய வலைப்பதிவு சேர்க்க</p>
               <div className="mt-2 sm:mt-3 h-1 w-16 sm:w-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"></div>
             </div>
@@ -82,14 +147,14 @@ const BlogForm: React.FC<BlogFormProps> = ({
             <div className="mb-6 sm:mb-8 relative">
               <div className="flex justify-between items-center mb-3 sm:mb-4">
                 {[1, 2, 3, 4].map((step) => (
-                  <div 
-                    key={step} 
+                  <div
+                    key={step}
                     className={`flex flex-col items-center ${activeStep >= step ? 'text-blue-700' : 'text-gray-500'}`}
                   >
-                    <div 
+                    <div
                       className={`w-6 h-6 sm:w-10 sm:h-10 rounded-full flex items-center justify-center mb-1 
-                      ${activeStep === step ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-300/50' : 
-                        activeStep > step ? 'bg-green-500 text-white' : 'bg-white/50 border border-gray-200 text-gray-500'}`}
+                      ${activeStep === step ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-300/50' :
+                          activeStep > step ? 'bg-green-500 text-white' : 'bg-white/50 border border-gray-200 text-gray-500'}`}
                     >
                       {activeStep > step ? (
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -98,24 +163,24 @@ const BlogForm: React.FC<BlogFormProps> = ({
                       ) : step}
                     </div>
                     <span className="text-xs font-medium hidden xs:block">
-                      {step === 1 ? 'Title' : 
-                       step === 2 ? 'Category' : 
-                       step === 3 ? 'Content' : 'Image'}
+                      {step === 1 ? 'Title' :
+                        step === 2 ? 'Category' :
+                          step === 3 ? 'Content' : 'Image'}
                     </span>
                   </div>
                 ))}
               </div>
-              
+
               {/* Progress bar with animated gradient */}
               <div className="h-1 w-full bg-gray-200/40 rounded-full overflow-hidden">
-                <div 
+                <div
                   className="h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full transition-all duration-300"
                   style={{ width: `${(activeStep / 4) * 100}%` }}
                 ></div>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 mt-4">
+            <form onSubmit={handleFormSubmit} className="space-y-4 sm:space-y-6 mt-4">
               {/* Step 1: Title */}
               <div className={`transition-all duration-500 ${activeStep === 1 ? 'block opacity-100' : 'hidden opacity-0'}`}>
                 <label htmlFor="title" className="block text-gray-800 font-medium mb-1 sm:mb-2 text-sm sm:text-base">
