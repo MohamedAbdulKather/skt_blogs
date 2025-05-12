@@ -307,7 +307,7 @@ export function ViewBlogPage() {
                     href={`/blog/${blog.slug}`}
                     className="text-blue-600 font-medium hover:underline text-sm sm:text-base"
                 >
-                    View More →
+                    View More → 
                 </Link>
                 
                   </div>
