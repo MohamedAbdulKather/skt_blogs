@@ -40,10 +40,10 @@ export function ViewAllBlogs() {
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  
+
   // Create a ref for the blog content section
   const blogSectionRef = useRef<HTMLDivElement>(null);
-  
+
   // Responsive pagination
   const blogsPerPage = useBlogsPerPage();
   const [currentPage, setCurrentPage] = useState(1);
@@ -218,7 +218,7 @@ export function ViewAllBlogs() {
     if (blogSectionRef.current) {
       const yOffset = -100; // Adjust this value for padding at the top
       const y = blogSectionRef.current.getBoundingClientRect().top + window.scrollY + yOffset;
-      
+
       window.scrollTo({
         top: y,
         behavior: 'smooth'
@@ -231,7 +231,7 @@ export function ViewAllBlogs() {
     setCurrentPage(pageNumber);
     setTimeout(scrollToBlogSection, 100); // Small delay to ensure state updates
   };
-  
+
   // Navigation functions with scroll
   const goToNextPage = () => {
     if (currentPage < totalPages) {
@@ -239,21 +239,21 @@ export function ViewAllBlogs() {
       setTimeout(scrollToBlogSection, 100);
     }
   };
-  
+
   const goToPreviousPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
       setTimeout(scrollToBlogSection, 100);
     }
   };
-  
+
   const goToFirstPage = () => {
     if (currentPage !== 1) {
       setCurrentPage(1);
       setTimeout(scrollToBlogSection, 100);
     }
   };
-  
+
   const goToLastPage = () => {
     if (currentPage !== totalPages) {
       setCurrentPage(totalPages);
@@ -312,8 +312,8 @@ export function ViewAllBlogs() {
               <div className="flex flex-col items-center justify-center text-center">
                 <h3 className="text-2xl font-semibold text-gray-800 mb-2">No Articles Found</h3>
                 <p className="text-gray-500 mb-6 max-w-md">
-                  {selectedCategory 
-                    ? "No articles found in this category." 
+                  {selectedCategory
+                    ? "No articles found in this category."
                     : "No articles have been published yet."}
                 </p>
               </div>
@@ -349,18 +349,24 @@ export function ViewAllBlogs() {
                   {/* Blog Content */}
                   <div className="p-8">
                     <Link href={`/blog/${blog.slug}`}>
-                      <h2 className="text-2xl font-serif font-bold text-gray-800 mb-4 hover:underline">
+                      <h2 className="text-2xl md:text-2xl sm:text-3xl font-serif font-bold text-gray-800 mb-4 hover:underline">
                         {blog.title}
-                      </h2>
-                    </Link>
+                    </h2>
+                </Link>
 
-                    <p className="text-gray-700 mb-5 line-clamp-3 text-base">
-                      {truncateContent(blog.content, 150)}
-                    </p>
-                    
-                    <span className="text-sm text-green-700 font-medium">
-                      {getCategoryName(blog.categoryId)}
-                    </span>
+                <p className="text-gray-700 mb-5 line-clamp-6 text-2xl md:text-2xl">
+                    {truncateContent(blog.content, 150)}
+                </p>
+
+                <span className="text-sm sm:text-base text-green-700 font-medium">
+                    {getCategoryName(blog.categoryId)}
+                </span><br />
+                <Link
+                    href={`/blog/${blog.slug}`}
+                    className="text-blue-600 font-medium hover:underline text-sm sm:text-base"
+                >
+                    View More →
+                </Link>
                   </div>
                 </div>
               ))}
@@ -372,40 +378,38 @@ export function ViewAllBlogs() {
             <div className="flex justify-end mt-12">
               <nav className="flex items-center">
                 {/* First Page Button */}
-                <button 
+                <button
                   onClick={goToFirstPage}
                   disabled={currentPage === 1}
-                  className={`px-3 py-2 mx-1 rounded-md ${
-                    currentPage === 1 
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                  className={`px-3 py-2 mx-1 rounded-md ${currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-700 hover:bg-gray-100'
-                  } border border-gray-300`}
+                    } border border-gray-300`}
                   aria-label="Go to first page"
                 >
                   &laquo;
                 </button>
-                
+
                 {/* Previous Button */}
-                <button 
+                <button
                   onClick={goToPreviousPage}
                   disabled={currentPage === 1}
-                  className={`px-3 py-2 mx-1 rounded-md ${
-                    currentPage === 1 
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                  className={`px-3 py-2 mx-1 rounded-md ${currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-700 hover:bg-gray-100'
-                  } border border-gray-300`}
+                    } border border-gray-300`}
                 >
                   &lt;
                 </button>
-                
+
                 <div className="flex">
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
                     .filter(num => {
                       const maxPagesToShow = 5;
                       if (totalPages <= maxPagesToShow) return true;
-                      
+
                       if (
-                        num === 1 || 
+                        num === 1 ||
                         num === totalPages ||
                         (num >= currentPage - 1 && num <= currentPage + 1)
                       ) {
@@ -416,7 +420,7 @@ export function ViewAllBlogs() {
                     .map(number => {
                       const result = [];
                       if (
-                        number > 1 && 
+                        number > 1 &&
                         !Array.from({ length: totalPages }, (_, i) => i + 1)
                           .filter(n => {
                             if (totalPages <= 5) return true;
@@ -430,23 +434,22 @@ export function ViewAllBlogs() {
                           </span>
                         );
                       }
-                      
+
                       result.push(
                         <button
                           key={number}
                           onClick={() => paginate(number)}
-                          className={`px-4 py-2 mx-1 rounded-md ${
-                            currentPage === number
+                          className={`px-4 py-2 mx-1 rounded-md ${currentPage === number
                               ? 'bg-gray-800 text-white'
                               : 'bg-white text-gray-700 hover:bg-gray-100'
-                          } border border-gray-300`}
+                            } border border-gray-300`}
                         >
                           {number}
                         </button>
                       );
-                      
+
                       if (
-                        number < totalPages && 
+                        number < totalPages &&
                         !Array.from({ length: totalPages }, (_, i) => i + 1)
                           .filter(n => {
                             if (totalPages <= 5) return true;
@@ -460,33 +463,31 @@ export function ViewAllBlogs() {
                           </span>
                         );
                       }
-                        
+
                       return result;
                     })}
                 </div>
-                
+
                 {/* Next Button */}
-                <button 
+                <button
                   onClick={goToNextPage}
                   disabled={currentPage === totalPages}
-                  className={`px-3 py-2 mx-1 rounded-md ${
-                    currentPage === totalPages 
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                  className={`px-3 py-2 mx-1 rounded-md ${currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-700 hover:bg-gray-100'
-                  } border border-gray-300`}
+                    } border border-gray-300`}
                 >
                   &gt;
                 </button>
-                
+
                 {/* Last Page Button */}
-                <button 
+                <button
                   onClick={goToLastPage}
                   disabled={currentPage === totalPages}
-                  className={`px-3 py-2 mx-1 rounded-md ${
-                    currentPage === totalPages 
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                  className={`px-3 py-2 mx-1 rounded-md ${currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-700 hover:bg-gray-100'
-                  } border border-gray-300`}
+                    } border border-gray-300`}
                   aria-label="Go to last page"
                 >
                   &raquo;
@@ -494,10 +495,10 @@ export function ViewAllBlogs() {
               </nav>
             </div>
           )}
-          
+
           {/* Page info */}
           {!isLoadingBlogs && filteredBlogs.length > 0 && (
-           <div className="text-right mt-3 text-black-500 text-sm">
+            <div className="text-right mt-3 text-black-500 text-sm">
               Showing {indexOfFirstBlog + 1}-{Math.min(indexOfLastBlog, filteredBlogs.length)} of {filteredBlogs.length} articles
             </div>
           )}
