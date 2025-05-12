@@ -297,16 +297,19 @@ export function ViewBlogPage() {
                       </h2>
                     </Link>
 
-                    <p
-                      className="text-gray-700 mb-5 line-clamp-10 text-base"
-                      style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
-                    >
-                      {truncateContent(blog.content, 150)}
-                    </p>
-
+                     <p className="text-gray-700 mb-5 line-clamp-6 text-2xl md:text-2xl">
+                    {truncateContent(blog.content, 150)}
+                </p>
                     <span className="text-sm text-green-700 font-medium">
                       {getCategoryName(blog.categoryId)}
-                    </span>
+                    </span><br />
+                    <Link
+                    href={`/blog/${blog.slug}`}
+                    className="text-blue-600 font-medium hover:underline text-sm sm:text-base"
+                >
+                    View More →
+                </Link>
+                
                   </div>
                 </div>
               ))}
