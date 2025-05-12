@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { db } from '@/lib/firebase';
 import { BlogPost, Category, CategoryBlogData, FormState } from '../model/add-blog';
@@ -75,17 +75,6 @@ export default function useBlogForm() {
       setIsLoadingCategories(false);
     }
   }, [formState.categoryId]);
-
-  // Generate a slug from the title
-  const generateSlug = (text: string): string => {
-    return text
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '') // Remove special characters
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-      .trim(); // Trim leading/trailing spaces
-  };
-
   // Handle image selection
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -131,9 +120,20 @@ export default function useBlogForm() {
   // Function to save blog to Firestore
   const saveBlogToFirestore = async (blogData: BlogPost) => {
     try {
+    // Create blog data without slug first
+      const blogDataWithoutSlug = {
+        ...blogData,
+        slug: '' // Temporarily empty
+      };
+
       // Store the blog post in the main "blogs" collection first
-      const blogDocRef = await addDoc(collection(db, "blogs"), blogData);
+      const blogDocRef = await addDoc(collection(db, "blogs"), blogDataWithoutSlug);
       
+      // Update the blog post with the slug as the document ID
+      await updateDoc(blogDocRef, {
+        slug: blogDocRef.id
+      });
+
       // Also store a reference to this blog in the category's blogs subcollection
       const categoryBlogData: CategoryBlogData = {
         blogId: blogDocRef.id,
@@ -142,7 +142,7 @@ export default function useBlogForm() {
         imageUrl: blogData.imageUrl || null, // Handle the case when no image
         createdAt: blogData.createdAt,
         isVerified: blogData.isVerified,
-        slug: blogData.slug
+        slug: blogDocRef.id
       };
       
       await addDoc(collection(db, "categories", blogData.categoryId, "blogs"), categoryBlogData);
@@ -195,11 +195,7 @@ export default function useBlogForm() {
     }
     
     setLoading(true);
-    
-    try {
-      // Generate slug from title
-      const slug = generateSlug(trimmedTitle);
-      
+      try {
       // Create blog post object
       const blogData: BlogPost = {
         title: trimmedTitle,
@@ -207,7 +203,7 @@ export default function useBlogForm() {
         content: trimmedContent,
         createdAt: serverTimestamp(),
         isVerified: false, // Initially set to not verified
-        slug: slug
+        slug: '' // This will be updated with the document ID after creation
       };
       
       // Handle image upload if an image was selected
