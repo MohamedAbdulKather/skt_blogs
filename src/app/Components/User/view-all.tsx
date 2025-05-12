@@ -28,7 +28,7 @@ interface BlogPost {
 // Custom hook for responsive blogs per page
 const useBlogsPerPage = () => {
   const isMobile = useMediaQuery({ maxWidth: 768 });
-  return isMobile ? 8 : 20; // 8 items on mobile, 20 on desktop
+  return isMobile ? 8 : 20; // 10 items on mobile, 20 on desktop
 };
 
 export function ViewAllBlogs() {
@@ -47,7 +47,6 @@ export function ViewAllBlogs() {
   // Responsive pagination
   const blogsPerPage = useBlogsPerPage();
   const [currentPage, setCurrentPage] = useState(1);
-  const isMobile = useMediaQuery({ maxWidth: 768 });
 
   // Adjust current page when blogsPerPage changes
   useEffect(() => {
@@ -262,23 +261,6 @@ export function ViewAllBlogs() {
     }
   };
 
-  // Function to determine which page numbers to show in mobile view
-  const getMobilePageNumbers = () => {
-    if (totalPages <= 3) {
-      // If 3 or fewer pages, show all
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
-    } else if (currentPage === 1) {
-      // If on first page, show 1, 2
-      return [1, 2];
-    } else if (currentPage === totalPages) {
-      // If on last page, show last-1, last
-      return [totalPages - 1, totalPages];
-    } else {
-      // Otherwise show current-1, current
-      return [currentPage - 1, currentPage];
-    }
-  };
-
   return (
     <div className="flex min-h-screen">
       {/* Main Content */}
@@ -385,38 +367,25 @@ export function ViewAllBlogs() {
             </div>
           )}
 
-          {/* Pagination - Responsive Design */}
+          {/* Pagination */}
           {!isLoadingBlogs && filteredBlogs.length > blogsPerPage && (
             <div className="flex justify-end mt-12">
               <nav className="flex items-center">
-                {/* First Page Button - Desktop Only */}
-                {!isMobile && (
-                  <button 
-                    onClick={goToFirstPage}
-                    disabled={currentPage === 1}
-                    className={`px-3 py-2 mx-1 rounded-md ${
-                      currentPage === 1 
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100'
-                    } border border-gray-300`}
-                    aria-label="Go to first page"
-                  >
-                    &laquo;
-                  </button>
-                )}
+                {/* First Page Button */}
+                <button 
+                  onClick={goToFirstPage}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-2 mx-1 rounded-md ${
+                    currentPage === 1 
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  } border border-gray-300`}
+                  aria-label="Go to first page"
+                >
+                  &laquo;
+                </button>
                 
-                {/* First Page Button - Mobile Only (Added for pages > 2) */}
-                {isMobile && currentPage > 2 && (
-                  <button 
-                    onClick={goToFirstPage}
-                    className="px-3 py-2 mx-1 rounded-md bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
-                    aria-label="Go to first page"
-                  >
-                    &laquo;
-                  </button>
-                )}
-                
-                {/* Previous Button - Always Show */}
+                {/* Previous Button */}
                 <button 
                   onClick={goToPreviousPage}
                   disabled={currentPage === 1}
@@ -429,96 +398,74 @@ export function ViewAllBlogs() {
                   &lt;
                 </button>
                 
-                {/* Page Numbers - Desktop View */}
-                {!isMobile && (
-                  <div className="flex">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1)
-                      .filter(num => {
-                        const maxPagesToShow = 5;
-                        if (totalPages <= maxPagesToShow) return true;
-                        
-                        if (
-                          num === 1 || 
-                          num === totalPages ||
-                          (num >= currentPage - 1 && num <= currentPage + 1)
-                        ) {
-                          return true;
-                        }
-                        return false;
-                      })
-                      .map(number => {
-                        const result = [];
-                        if (
-                          number > 1 && 
-                          !Array.from({ length: totalPages }, (_, i) => i + 1)
-                            .filter(n => {
-                              if (totalPages <= 5) return true;
-                              return n === 1 || n === totalPages || (n >= currentPage - 1 && n <= currentPage + 1);
-                            })
-                            .includes(number - 1)
-                        ) {
-                          result.push(
-                            <span key={`ellipsis-before-${number}`} className="px-3 py-2 mx-1">
-                              ...
-                            </span>
-                          );
-                        }
-                        
+                <div className="flex">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(num => {
+                      const maxPagesToShow = 5;
+                      if (totalPages <= maxPagesToShow) return true;
+                      
+                      if (
+                        num === 1 || 
+                        num === totalPages ||
+                        (num >= currentPage - 1 && num <= currentPage + 1)
+                      ) {
+                        return true;
+                      }
+                      return false;
+                    })
+                    .map(number => {
+                      const result = [];
+                      if (
+                        number > 1 && 
+                        !Array.from({ length: totalPages }, (_, i) => i + 1)
+                          .filter(n => {
+                            if (totalPages <= 5) return true;
+                            return n === 1 || n === totalPages || (n >= currentPage - 1 && n <= currentPage + 1);
+                          })
+                          .includes(number - 1)
+                      ) {
                         result.push(
-                          <button
-                            key={number}
-                            onClick={() => paginate(number)}
-                            className={`px-4 py-2 mx-1 rounded-md ${
-                              currentPage === number
-                                ? 'bg-gray-800 text-white'
-                                : 'bg-white text-gray-700 hover:bg-gray-100'
-                            } border border-gray-300`}
-                          >
-                            {number}
-                          </button>
+                          <span key={`ellipsis-before-${number}`} className="px-3 py-2 mx-1">
+                            ...
+                          </span>
                         );
+                      }
+                      
+                      result.push(
+                        <button
+                          key={number}
+                          onClick={() => paginate(number)}
+                          className={`px-4 py-2 mx-1 rounded-md ${
+                            currentPage === number
+                              ? 'bg-gray-800 text-white'
+                              : 'bg-white text-gray-700 hover:bg-gray-100'
+                          } border border-gray-300`}
+                        >
+                          {number}
+                        </button>
+                      );
+                      
+                      if (
+                        number < totalPages && 
+                        !Array.from({ length: totalPages }, (_, i) => i + 1)
+                          .filter(n => {
+                            if (totalPages <= 5) return true;
+                            return n === 1 || n === totalPages || (n >= currentPage - 1 && n <= currentPage + 1);
+                          })
+                          .includes(number + 1)
+                      ) {
+                        result.push(
+                          <span key={`ellipsis-after-${number}`} className="px-3 py-2 mx-1">
+                            ...
+                          </span>
+                        );
+                      }
                         
-                        if (
-                          number < totalPages && 
-                          !Array.from({ length: totalPages }, (_, i) => i + 1)
-                            .filter(n => {
-                              if (totalPages <= 5) return true;
-                              return n === 1 || n === totalPages || (n >= currentPage - 1 && n <= currentPage + 1);
-                            })
-                            .includes(number + 1)
-                        ) {
-                          result.push(
-                            <span key={`ellipsis-after-${number}`} className="px-3 py-2 mx-1">
-                              ...
-                            </span>
-                          );
-                        }
-                        
-                        return result;
-                      })}
-                  </div>
-                )}
+                      return result;
+                    })}
+                </div>
                 
-                {/* Page Numbers - Mobile View */}
-                {isMobile && (
-                  <div className="flex">
-                    {getMobilePageNumbers().map(number => (
-                      <button
-                        key={number}
-                        onClick={() => paginate(number)}
-                        className={`px-4 py-2 mx-1 rounded-md ${
-                          currentPage === number
-                            ? 'bg-gray-800 text-white'
-                            : 'bg-white text-gray-700 hover:bg-gray-100'
-                        } border border-gray-300`}
-                      >
-                        {number}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                
-                {/* Next Button - Always Show */}
+                {/* Next Button */}
                 <button 
                   onClick={goToNextPage}
                   disabled={currentPage === totalPages}
@@ -531,21 +478,19 @@ export function ViewAllBlogs() {
                   &gt;
                 </button>
                 
-                {/* Last Page Button - Desktop Only */}
-                {!isMobile && (
-                  <button 
-                    onClick={goToLastPage}
-                    disabled={currentPage === totalPages}
-                    className={`px-3 py-2 mx-1 rounded-md ${
-                      currentPage === totalPages 
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100'
-                    } border border-gray-300`}
-                    aria-label="Go to last page"
-                  >
-                    &raquo;
-                  </button>
-                )}
+                {/* Last Page Button */}
+                <button 
+                  onClick={goToLastPage}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-2 mx-1 rounded-md ${
+                    currentPage === totalPages 
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  } border border-gray-300`}
+                  aria-label="Go to last page"
+                >
+                  &raquo;
+                </button>
               </nav>
             </div>
           )}
