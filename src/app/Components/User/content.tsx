@@ -93,7 +93,7 @@ export function ViewBlogPage() {
   useEffect(() => {
     const fetchRecentBlogs = async () => {
       setIsLoadingBlogs(true);
-      try {
+      try { 
         // First attempt: try with a compound query that requires an index
         try {
           const q = query(
@@ -131,7 +131,7 @@ export function ViewBlogPage() {
 
             // Fetch more to ensure we have enough after client-side filtering
             const fallbackLimit = displayCount + 10;
-            
+
             const fallbackQ = query(
               collection(db, "blogs"),
               orderBy("createdAt", "desc"),
@@ -205,7 +205,7 @@ export function ViewBlogPage() {
         <div className="max-w-7xl mx-auto py-12 px-6 md:px-8">
           {/* Blog Heading with View More link */}
           <div className="flex flex-col md:flex-row md:justify-between items-center mb-10">
-            <h1 className="text-4xl md:text-5xl font-serif text-gray-800 tracking-wider text-center md:text-left mb-4 md:mb-0">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-serif font-bold text-gray-800 tracking-wider text-center mb-4">
               வலைப்பதிவுகள்
             </h1>
             {/* View More link in header - right aligned (visible only on desktop) */}
