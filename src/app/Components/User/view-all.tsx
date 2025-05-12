@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useMediaQuery } from 'react-responsive';
 import { collection, query, orderBy, getDocs, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import Image from "next/image";
-import { CategoryDropdown } from './CategoryDropdown'; // Import the new component
+import { CategoryDropdown } from './CategoryDropdown';
 
 // Define types
 interface Category {
@@ -24,6 +25,12 @@ interface BlogPost {
   slug: string;
 }
 
+// Custom hook for responsive blogs per page
+const useBlogsPerPage = () => {
+  const isMobile = useMediaQuery({ maxWidth: 768 });
+  return isMobile ? 8 : 20; // 10 items on mobile, 20 on desktop
+};
+
 export function ViewAllBlogs() {
   // State for blogs and categories
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
@@ -34,9 +41,20 @@ export function ViewAllBlogs() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
-  // Pagination states
+  // Create a ref for the blog content section
+  const blogSectionRef = useRef<HTMLDivElement>(null);
+  
+  // Responsive pagination
+  const blogsPerPage = useBlogsPerPage();
   const [currentPage, setCurrentPage] = useState(1);
-  const blogsPerPage = 8;
+
+  // Adjust current page when blogsPerPage changes
+  useEffect(() => {
+    const newTotalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
+    if (currentPage > newTotalPages && newTotalPages > 0) {
+      setCurrentPage(newTotalPages);
+    }
+  }, [blogsPerPage, filteredBlogs.length, currentPage]);
 
   // Fetch categories
   useEffect(() => {
@@ -105,11 +123,11 @@ export function ViewAllBlogs() {
 
           setBlogs(blogsData);
           setFilteredBlogs(blogsData);
-          setCurrentPage(1); // Reset to first page whenever blogs change
+          setCurrentPage(1);
         } catch (indexError) {
           console.error("Index error:", indexError);
 
-          // If we get an index error, try a simpler query as a fallback
+          // Fallback to simpler query
           if (indexError instanceof Error && indexError.message.includes("requires an index")) {
             console.log("Falling back to simpler query without compound index requirement");
 
@@ -135,19 +153,16 @@ export function ViewAllBlogs() {
               });
             });
 
-            // Filter verified blogs client-side
             const verifiedBlogs = allBlogsData.filter(blog => blog.isVerified);
-
             setBlogs(verifiedBlogs);
             setFilteredBlogs(verifiedBlogs);
-            setCurrentPage(1); // Reset to first page whenever blogs change
+            setCurrentPage(1);
 
-            // Set a specific error to guide the user to create indexes
             setError(
               "Firebase indexes need to be created. Click the link in the console error message to create the required indexes."
             );
           } else {
-            throw indexError; // Re-throw if it's not an index error
+            throw indexError;
           }
         }
       } catch (error) {
@@ -171,7 +186,7 @@ export function ViewAllBlogs() {
     } else {
       setFilteredBlogs(blogs);
     }
-    setCurrentPage(1); // Reset to first page whenever filters change
+    setCurrentPage(1);
   }, [selectedCategory, blogs]);
 
   // Find category name by ID
@@ -191,41 +206,63 @@ export function ViewAllBlogs() {
     setSelectedCategory(value === "all" ? null : value);
   };
 
-  // Get current blogs for pagination
+  // Pagination logic
   const indexOfLastBlog = currentPage * blogsPerPage;
   const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
   const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
   const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
 
-  // Change page
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  // Function to scroll to blog section
+  const scrollToBlogSection = () => {
+    // Use window.scrollTo for a smoother experience
+    if (blogSectionRef.current) {
+      const yOffset = -100; // Adjust this value for padding at the top
+      const y = blogSectionRef.current.getBoundingClientRect().top + window.scrollY + yOffset;
+      
+      window.scrollTo({
+        top: y,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Change page with scroll
+  const paginate = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    setTimeout(scrollToBlogSection, 100); // Small delay to ensure state updates
+  };
   
-  // Go to next page
+  // Navigation functions with scroll
   const goToNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
+      setTimeout(scrollToBlogSection, 100);
     }
   };
   
-  // Go to previous page
   const goToPreviousPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
+      setTimeout(scrollToBlogSection, 100);
+    }
+  };
+  
+  const goToFirstPage = () => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+      setTimeout(scrollToBlogSection, 100);
+    }
+  };
+  
+  const goToLastPage = () => {
+    if (currentPage !== totalPages) {
+      setCurrentPage(totalPages);
+      setTimeout(scrollToBlogSection, 100);
     }
   };
 
-  // Go to first page
-  const goToFirstPage = () => {
-    setCurrentPage(1);
-  };
-  
-  // Go to last page
-  const goToLastPage = () => {
-    setCurrentPage(totalPages);
-  };
-
   return (
-    <div className="flex min-h-screen ">
+    <div className="flex min-h-screen">
       {/* Main Content */}
       <div className="w-full">
         <div className="max-w-7xl mx-auto py-12 px-6 md:px-8">
@@ -236,7 +273,7 @@ export function ViewAllBlogs() {
             </h1>
           </div>
 
-          {/* Category Filter Dropdown - Now using the new component */}
+          {/* Category Filter Dropdown */}
           <div className="mb-8">
             <CategoryDropdown
               categories={categories}
@@ -245,6 +282,9 @@ export function ViewAllBlogs() {
               isLoading={isLoadingCategories}
             />
           </div>
+
+          {/* Blog section reference point */}
+          <div ref={blogSectionRef} className="scroll-mt-24"></div>
 
           {/* Error Message */}
           {error && (
@@ -280,7 +320,7 @@ export function ViewAllBlogs() {
             </div>
           )}
 
-          {/* Card Grid - 4 per row matching the design from the image */}
+          {/* Card Grid */}
           {!isLoadingBlogs && currentBlogs.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4 bg-gray-100">
               {currentBlogs.map((blog) => (
@@ -298,9 +338,7 @@ export function ViewAllBlogs() {
                       ) : (
                         <div className="h-full w-full bg-white flex items-center justify-center border-b border-gray-200">
                           <div className="text-center p-4">
-                            <div className="w-16 h-16 mx-auto mb-2">
-                              
-                            </div>
+                            <div className="w-16 h-16 mx-auto mb-2"></div>
                             <p className="text-gray-400 text-sm">Image not available</p>
                           </div>
                         </div>
@@ -308,7 +346,7 @@ export function ViewAllBlogs() {
                     </div>
                   </Link>
 
-                  {/* Blog Content - Matching the design from the image */}
+                  {/* Blog Content */}
                   <div className="p-8">
                     <Link href={`/blog/${blog.slug}`}>
                       <h2 className="text-2xl font-serif font-bold text-gray-800 mb-4 hover:underline">
@@ -329,7 +367,7 @@ export function ViewAllBlogs() {
             </div>
           )}
 
-          {/* Enhanced Pagination with First and Last buttons - Now aligned to the left */}
+          {/* Pagination */}
           {!isLoadingBlogs && filteredBlogs.length > blogsPerPage && (
             <div className="flex justify-end mt-12">
               <nav className="flex items-center">
@@ -363,7 +401,6 @@ export function ViewAllBlogs() {
                 <div className="flex">
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
                     .filter(num => {
-                      // Show current page, first page, last page, and pages around current page
                       const maxPagesToShow = 5;
                       if (totalPages <= maxPagesToShow) return true;
                       
@@ -377,7 +414,6 @@ export function ViewAllBlogs() {
                       return false;
                     })
                     .map(number => {
-                      // Insert ellipsis for gaps
                       const result = [];
                       if (
                         number > 1 && 
@@ -459,7 +495,7 @@ export function ViewAllBlogs() {
             </div>
           )}
           
-          {/* Page info - Also aligned to the left */}
+          {/* Page info */}
           {!isLoadingBlogs && filteredBlogs.length > 0 && (
            <div className="text-right mt-3 text-black-500 text-sm">
               Showing {indexOfFirstBlog + 1}-{Math.min(indexOfLastBlog, filteredBlogs.length)} of {filteredBlogs.length} articles
