@@ -119,7 +119,7 @@ export default function BlogDetailPage() {
   // Format content with paragraphs
   const formatContent = (content: string) => {
     return content.split('\n').map((paragraph, index) => (
-      <p key={index} className="mb-4 font-serif text-gray-800 break-words">
+      <p key={index} className="mb-2 font-serif text-gray-800 break-words">
         {paragraph}
       </p>
     ));
@@ -293,7 +293,7 @@ export default function BlogDetailPage() {
               </div>
               
               {/* Blog Content - Serif Font */}
-              <div className="prose prose-slate max-w-none text-gray-800 leading-relaxed font-serif break-words overflow-hidden text-2xl md:text-2xl">
+              <div className="prose prose-slate max-w-none text-gray-800 leading-normal font-serif break-words overflow-hidden text-base md:text-base">
                 {formatContent(blog.content)}
               </div>
               

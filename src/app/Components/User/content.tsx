@@ -297,7 +297,7 @@ export function ViewBlogPage() {
                       </h2>
                     </Link>
 
-                     <p className="text-gray-700 mb-5 line-clamp-6 text-2xl md:text-2xl">
+                     <p className="text-gray-700 mb-5 line-clamp-6 text-base md:text-base">
                     {truncateContent(blog.content, 150)}
                 </p>
                     <span className="text-sm text-green-700 font-medium">
