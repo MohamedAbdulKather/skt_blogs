@@ -293,7 +293,7 @@ export default function BlogDetailPage() {
               </div>
               
               {/* Blog Content - Serif Font */}
-              <div className="prose prose-slate max-w-none text-gray-800 leading-normal font-serif break-words overflow-hidden text-base md:text-base">
+              <div className="prose prose-slate max-w-none text-gray-700 leading-normal font-serif break-words overflow-hidden text-base md:text-base">
                 {formatContent(blog.content)}
               </div>
               
