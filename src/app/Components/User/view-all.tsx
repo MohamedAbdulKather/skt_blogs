@@ -2,27 +2,22 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useMediaQuery } from 'react-responsive';
-import { collection, query, orderBy, getDocs, where, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import Image from "next/image";
 import { CategoryDropdown } from './CategoryDropdown';
+import { Category } from './add-blog/model/add-blog';
 
-// Define types
-interface Category {
-  id: string;
-  name: string;
-}
 
+// Remove Firebase imports and update BlogPost interface
 interface BlogPost {
   id: string;
   title: string;
   content: string;
-  imageUrl?: string;
-  createdAt: Date;
+  imageUrl: string | null;
   categoryId: string;
   isVerified: boolean;
-  slug: string;
+  createdAt: string;
+  slug?: string; // Made optional since it's not in the API response
 }
 
 // Custom hook for responsive blogs per page
@@ -58,37 +53,26 @@ export function ViewAllBlogs() {
 
   // Fetch categories
   useEffect(() => {
-    setIsLoadingCategories(true);
+    const fetchCategories = async () => {
+      setIsLoadingCategories(true);
+      try {
+        const response = await fetch('http://localhost:4000/api/categories');
+        const result = await response.json();
 
-    try {
-      const q = query(
-        collection(db, "categories"),
-        orderBy("name", "asc")
-      );
-
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const categoriesData: Category[] = [];
-        querySnapshot.forEach((doc) => {
-          categoriesData.push({
-            id: doc.id,
-            name: doc.data().name,
-          });
-        });
-
-        setCategories(categoriesData);
-        setIsLoadingCategories(false);
-      }, (error) => {
+        if (result.success) {
+          setCategories(result.data);
+        } else {
+          throw new Error('Failed to fetch categories');
+        }
+      } catch (error) {
         console.error("Error fetching categories:", error);
         setError("Failed to load categories");
+      } finally {
         setIsLoadingCategories(false);
-      });
+      }
+    };
 
-      return () => unsubscribe();
-    } catch (error) {
-      console.error("Exception when setting up category listener:", error);
-      setError(`Exception when fetching categories: ${error}`);
-      setIsLoadingCategories(false);
-    }
+    fetchCategories();
   }, []);
 
   // Fetch all blogs
@@ -96,74 +80,17 @@ export function ViewAllBlogs() {
     const fetchAllBlogs = async () => {
       setIsLoadingBlogs(true);
       try {
-        // First attempt: try with a compound query that requires an index
-        try {
-          const q = query(
-            collection(db, "blogs"),
-            where("isVerified", "==", true),
-            orderBy("createdAt", "desc")
-          );
+        const response = await fetch('http://localhost:4000/api/blogs');
+        const result = await response.json();
 
-          const querySnapshot = await getDocs(q);
-          const blogsData: BlogPost[] = [];
-
-          querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            blogsData.push({
-              id: doc.id,
-              title: data.title,
-              content: data.content,
-              imageUrl: data.imageUrl,
-              createdAt: data.createdAt?.toDate?.() || null,
-              categoryId: data.categoryId,
-              isVerified: data.isVerified,
-              slug: data.slug
-            });
-          });
-
-          setBlogs(blogsData);
-          setFilteredBlogs(blogsData);
+        if (result.success) {
+          // Only get verified blogs
+          const verifiedBlogs = result.data.filter((blog: BlogPost) => blog.isVerified);
+          setBlogs(verifiedBlogs);
+          setFilteredBlogs(verifiedBlogs);
           setCurrentPage(1);
-        } catch (indexError) {
-          console.error("Index error:", indexError);
-
-          // Fallback to simpler query
-          if (indexError instanceof Error && indexError.message.includes("requires an index")) {
-            console.log("Falling back to simpler query without compound index requirement");
-
-            const fallbackQ = query(
-              collection(db, "blogs"),
-              orderBy("createdAt", "desc")
-            );
-
-            const fallbackSnapshot = await getDocs(fallbackQ);
-            const allBlogsData: BlogPost[] = [];
-
-            fallbackSnapshot.forEach((doc) => {
-              const data = doc.data();
-              allBlogsData.push({
-                id: doc.id,
-                title: data.title,
-                content: data.content,
-                imageUrl: data.imageUrl,
-                createdAt: data.createdAt?.toDate?.() || null,
-                categoryId: data.categoryId,
-                isVerified: data.isVerified || false,
-                slug: data.slug
-              });
-            });
-
-            const verifiedBlogs = allBlogsData.filter(blog => blog.isVerified);
-            setBlogs(verifiedBlogs);
-            setFilteredBlogs(verifiedBlogs);
-            setCurrentPage(1);
-
-            setError(
-              "Firebase indexes need to be created. Click the link in the console error message to create the required indexes."
-            );
-          } else {
-            throw indexError;
-          }
+        } else {
+          throw new Error('Failed to fetch blogs');
         }
       } catch (error) {
         console.error("Error fetching all blogs:", error);
@@ -172,8 +99,9 @@ export function ViewAllBlogs() {
         } else {
           setError("Failed to load blogs: An unknown error occurred.");
         }
+      } finally {
+        setIsLoadingBlogs(false);
       }
-      setIsLoadingBlogs(false);
     };
 
     fetchAllBlogs();
@@ -192,7 +120,7 @@ export function ViewAllBlogs() {
   // Find category name by ID
   const getCategoryName = (categoryId: string) => {
     const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.name : "Unknown Category";
+    return category ? category.title : "Unknown Category";
   };
 
   // Truncate content for preview
@@ -326,7 +254,7 @@ export function ViewAllBlogs() {
               {currentBlogs.map((blog) => (
                 <div key={blog.id} className="bg-white mt-5 mb-5 border border-black-200 shadow-sm hover:shadow-md transition-shadow">
                   {/* Blog Image */}
-                  <Link href={`/blog/${blog.slug}`}>
+                  <Link href={`/blog/${blog.id}`}>
                     <div className="relative h-60 w-full overflow-hidden">
                       {blog.imageUrl ? (
                         <Image
@@ -348,25 +276,25 @@ export function ViewAllBlogs() {
 
                   {/* Blog Content */}
                   <div className="p-8">
-                    <Link href={`/blog/${blog.slug}`}>
+                    <Link href={`/blog/${blog.id}`}>
                       <h2 className="text-2xl md:text-2xl sm:text-3xl font-serif font-bold text-gray-800 mb-4 hover:underline">
                         {blog.title}
-                    </h2>
-                </Link>
+                      </h2>
+                    </Link>
 
-                <p className="text-gray-700 mb-5 line-clamp-6 text-base md:text-base">
-                    {truncateContent(blog.content, 150)}
-                </p>
+                    <p className="text-gray-700 mb-5 line-clamp-6 text-base md:text-base">
+                      {truncateContent(blog.content, 150)}
+                    </p>
 
-                <span className="text-sm sm:text-base text-green-700 font-medium">
-                    {getCategoryName(blog.categoryId)}
-                </span><br />
-                <Link
-                    href={`/blog/${blog.slug}`}
-                    className="text-blue-600 font-medium hover:underline text-sm sm:text-base"
-                >
-                    View More →
-                </Link>
+                    <span className="text-sm sm:text-base text-green-700 font-medium">
+                      {getCategoryName(blog.categoryId)}
+                    </span><br />
+                    <Link
+                      href={`/blog/${blog.id}`}
+                      className="text-blue-600 font-medium hover:underline text-sm sm:text-base"
+                    >
+                      View More →
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -382,8 +310,8 @@ export function ViewAllBlogs() {
                   onClick={goToFirstPage}
                   disabled={currentPage === 1}
                   className={`px-3 py-2 mx-1 rounded-md ${currentPage === 1
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-white text-black hover:bg-gray-100'
                     } border border-gray-300`}
                   aria-label="Go to first page"
                 >
@@ -395,8 +323,8 @@ export function ViewAllBlogs() {
                   onClick={goToPreviousPage}
                   disabled={currentPage === 1}
                   className={`px-3 py-2 mx-1 rounded-md ${currentPage === 1
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-white text-black hover:bg-gray-100'
                     } border border-gray-300`}
                 >
                   &lt;
@@ -429,7 +357,7 @@ export function ViewAllBlogs() {
                           .includes(number - 1)
                       ) {
                         result.push(
-                          <span key={`ellipsis-before-${number}`} className="px-3 py-2 mx-1">
+                          <span key={`ellipsis-before-${number}`} className="px-3 py-2 mx-1 text-black">
                             ...
                           </span>
                         );
@@ -440,8 +368,8 @@ export function ViewAllBlogs() {
                           key={number}
                           onClick={() => paginate(number)}
                           className={`px-4 py-2 mx-1 rounded-md ${currentPage === number
-                              ? 'bg-gray-800 text-white'
-                              : 'bg-white text-gray-700 hover:bg-gray-100'
+                              ? 'bg-black text-white font-medium'
+                              : 'bg-white text-black hover:bg-gray-100'
                             } border border-gray-300`}
                         >
                           {number}
@@ -458,7 +386,7 @@ export function ViewAllBlogs() {
                           .includes(number + 1)
                       ) {
                         result.push(
-                          <span key={`ellipsis-after-${number}`} className="px-3 py-2 mx-1">
+                          <span key={`ellipsis-after-${number}`} className="px-3 py-2 mx-1 text-black">
                             ...
                           </span>
                         );
@@ -473,8 +401,8 @@ export function ViewAllBlogs() {
                   onClick={goToNextPage}
                   disabled={currentPage === totalPages}
                   className={`px-3 py-2 mx-1 rounded-md ${currentPage === totalPages
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-white text-black hover:bg-gray-100'
                     } border border-gray-300`}
                 >
                   &gt;
@@ -485,8 +413,8 @@ export function ViewAllBlogs() {
                   onClick={goToLastPage}
                   disabled={currentPage === totalPages}
                   className={`px-3 py-2 mx-1 rounded-md ${currentPage === totalPages
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-white text-black hover:bg-gray-100'
                     } border border-gray-300`}
                   aria-label="Go to last page"
                 >
@@ -498,7 +426,7 @@ export function ViewAllBlogs() {
 
           {/* Page info */}
           {!isLoadingBlogs && filteredBlogs.length > 0 && (
-            <div className="text-right mt-3 text-black-500 text-sm">
+            <div className="text-right mt-4 text-black font-medium text-sm">
               Showing {indexOfFirstBlog + 1}-{Math.min(indexOfLastBlog, filteredBlogs.length)} of {filteredBlogs.length} articles
             </div>
           )}

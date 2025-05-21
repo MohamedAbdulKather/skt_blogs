@@ -257,7 +257,7 @@ const BlogForm: React.FC<BlogFormProps> = ({
                         <option value="" disabled className="text-black">Select Category (வகையை தேர்ந்தெடுக்கவும்)</option>
                         {categories.map((category) => (
                           <option key={category.id} value={category.id}>
-                            {category.name}
+                            {category.title}
                           </option>
                         ))}
                       </select>
