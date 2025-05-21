@@ -1,8 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { collection, query, getDocs, where, doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { useParams, useRouter } from 'next/navigation';
 import Image from "next/image";
 import { ArrowLeft, BookOpen, Calendar, Bookmark } from 'lucide-react';
@@ -11,24 +9,26 @@ import Navbar from './navbar';
 // Define types
 interface Category {
   id: string;
-  name: string;
+  title: string;
 }
 
 interface BlogPost {
-  id: string;
+  id: string;  // This is what we'll use to fetch the blog
   title: string;
   content: string;
-  imageUrl?: string;
-  createdAt: Date;
+  imageUrl: string | null;
   categoryId: string;
   isVerified: boolean;
-  slug: string;
+  createdAt: string;
 }
 
 export default function BlogDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { slug } = params;
+  
+  // Fix: Ensure we're getting the actual route parameter
+  // In Next.js, if your route is /blog/[id], the param name is 'id'
+  const blogId = params?.id || params?.slug;
 
   // State for blog post and category
   const [blog, setBlog] = useState<BlogPost | null>(null);
@@ -36,80 +36,64 @@ export default function BlogDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sidebarExpanded] = useState<boolean>(false);
-  
-  
-  // Fetch blog post data by slug
+
+  // Fetch blog post data by ID
   useEffect(() => {
     const fetchBlogPost = async () => {
-      if (!slug) return;
+      if (!blogId) {
+        setError('Blog ID is missing');
+        setIsLoading(false);
+        return;
+      }
 
       setIsLoading(true);
       setError(null);
 
       try {
-        // Query the blog collection by slug
-        const blogQuery = query(
-          collection(db, "blogs"),
-          where("slug", "==", slug),
-          where("isVerified", "==", true)
-        );
-
-        const querySnapshot = await getDocs(blogQuery);
-
-        if (querySnapshot.empty) {
-          setError("Blog post not found");
-          setIsLoading(false);
-          return;
+        // Use the correct API endpoint with the blog ID
+        const response = await fetch(`http://localhost:4000/api/blogs/${blogId}`);
+        
+        if (!response.ok) {
+          throw new Error(`Blog post not found (Status: ${response.status})`);
         }
 
-        // Get the first (and should be only) document
-        const blogDoc = querySnapshot.docs[0];
-        const blogData = blogDoc.data();
+        const result = await response.json();
 
-        const blogPost: BlogPost = {
-          id: blogDoc.id,
-          title: blogData.title,
-          content: blogData.content,
-          imageUrl: blogData.imageUrl,
-          createdAt: blogData.createdAt?.toDate() || null,
-          categoryId: blogData.categoryId,
-          isVerified: blogData.isVerified,
-          slug: blogData.slug
-        };
+        if (!result.success) {
+          throw new Error(result.message || 'Blog post not found');
+        }
 
-        setBlog(blogPost);
+        setBlog(result.data);
 
-        // Fetch the category data
-        if (blogData.categoryId) {
-          try {
-            const categoryDocRef = doc(db, "categories", blogData.categoryId);
-            const categoryDoc = await getDoc(categoryDocRef);
+        // Fetch category data if blog has categoryId
+        if (result.data.categoryId) {
+          const categoryResponse = await fetch(`http://localhost:4000/api/categories/${result.data.categoryId}`);
+          
+          if (!categoryResponse.ok) {
+            throw new Error('Failed to fetch category');
+          }
 
-            if (categoryDoc.exists()) {
-              setCategory({
-                id: categoryDoc.id,
-                name: categoryDoc.data().name
-              });
-            }
-          } catch (categoryError) {
-            console.error("Error fetching category:", categoryError);
+          const categoryResult = await categoryResponse.json();
+
+          if (categoryResult.success) {
+            setCategory(categoryResult.data);
           }
         }
       } catch (error) {
         console.error("Error fetching blog post:", error);
-        setError(`Failed to load blog post: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        setError(error instanceof Error ? error.message : 'Failed to load blog post');
       }
 
       setIsLoading(false);
     };
 
     fetchBlogPost();
-  }, [slug]);
+  }, [blogId]);
 
   // Format date for display
-  const formatDate = (date: Date | null) => {
-    if (!date) return "Unknown date";
-    return date.toLocaleDateString('en-US', {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Unknown date";
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -137,13 +121,16 @@ export default function BlogDetailPage() {
     }, 0);
     
     const hue = Math.abs(hash % 360);
-    // Use a soothing pastel palette
     return {
       primary: `hsl(${hue}, 70%, 85%)`,
       secondary: `hsl(${(hue + 40) % 360}, 70%, 75%)`,
       tertiary: `hsl(${(hue + 80) % 360}, 70%, 80%)`
     };
   };
+
+  // Debug output - useful for troubleshooting
+  console.log('Current params:', params);
+  console.log('Blog ID being used:', blogId);
 
   return (
     <div className="min-h-screen bg-gray-50 font-serif overflow-x-hidden">
@@ -251,7 +238,7 @@ export default function BlogDetailPage() {
                         {category && (
                           <div className="mt-2">
                             <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full uppercase tracking-wider">
-                              {category.name}
+                              {category.title}
                             </span>
                           </div>
                         )}
@@ -268,7 +255,7 @@ export default function BlogDetailPage() {
               <div className="flex justify-center mb-6">
                 {category && (
                   <span className="px-4 py-1 bg-gray-100 text-gray-800 text-sm font-medium rounded-full font-serif uppercase tracking-wider">
-                    {category.name}
+                    {category.title}
                   </span>
                 )}
               </div>

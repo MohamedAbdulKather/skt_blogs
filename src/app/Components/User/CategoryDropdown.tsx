@@ -1,17 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { Category } from './add-blog/model/add-blog';
+
 
 // Define types
-interface Category {
-  id: string;
-  name: string;
-}
-
 interface CategoryDropdownProps {
   categories: Category[];
   selectedCategory: string | null;
-  onChange: (categoryId: string) => void;
+  onChange: (value: string) => void;
   isLoading: boolean;
 }
 
@@ -28,7 +25,7 @@ export function CategoryDropdown({
   const getSelectedCategoryName = () => {
     if (!selectedCategory) return "All Categories";
     const category = categories.find(cat => cat.id === selectedCategory);
-    return category ? category.name : "All Categories";
+    return category ? category.title : "All Categories";
   };
 
   // Handle selecting a category
@@ -52,7 +49,7 @@ export function CategoryDropdown({
   }, []);
 
   // Add "All Categories" to the beginning of the list
-  const allCategoriesOption = { id: "all", name: "All Categories" };
+  const allCategoriesOption = { id: "all", title: "All Categories" };
   const categoriesWithAll = [allCategoriesOption, ...categories];
 
   return (
@@ -80,7 +77,7 @@ export function CategoryDropdown({
                          ${index !== categoriesWithAll.length - 1 ? 'border-b border-gray-200' : ''}`}
               onClick={() => handleSelectCategory(category.id === "all" ? null : category.id)}
             >
-              {category.name}
+              {category.title}
             </div>
           ))}
           

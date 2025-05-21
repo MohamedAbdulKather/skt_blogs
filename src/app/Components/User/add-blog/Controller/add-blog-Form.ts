@@ -1,16 +1,8 @@
-// useBlogForm.ts
-'use client';
-
 import { useState, useEffect } from 'react';
-import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, updateDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { db } from '@/lib/firebase';
-import { BlogPost, Category, CategoryBlogData, FormState } from '../model/add-blog';
+import { BlogPost, Category, FormState, CategoryResponse, ApiResponse } from '../model/add-blog';
 import { toast } from 'react-toastify';
 
-
 export default function useBlogForm() {
-  // Form state
   const [formState, setFormState] = useState<FormState>({
     title: '',
     categoryId: '',
@@ -19,62 +11,56 @@ export default function useBlogForm() {
     imagePreview: null
   });
   
-  // Other state
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
-  // Fetch categories from Firestore for the dropdown
+  // Fetch categories from API
   useEffect(() => {
-    setIsLoadingCategories(true);
-    setError(null);
-    
-    try {
-      console.log("Fetching categories from Firestore...");
+    const fetchCategories = async () => {
+      setIsLoadingCategories(true);
+      setError(null);
       
-      const q = query(
-        collection(db, "categories"),
-        orderBy("name", "asc") // Order alphabetically
-      );
-
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        console.log(`Got ${querySnapshot.size} categories`);
-        
-        const categoriesData: Category[] = [];
-        querySnapshot.forEach((doc) => {
-          categoriesData.push({
-            id: doc.id,
-            name: doc.data().name,
-          });
-        });
-        
-        console.log("Categories loaded:", categoriesData);
-        setCategories(categoriesData);
-        setIsLoadingCategories(false);
-        
-        // Set default category if available
-        if (categoriesData.length > 0 && !formState.categoryId) {
-          setFormState(prev => ({
-            ...prev,
-            categoryId: categoriesData[0].id
-          }));
+      try {
+        const response = await fetch('http://localhost:4000/api/categories');
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
         }
-      }, (error) => {
+        
+        const result = await response.json() as ApiResponse<CategoryResponse>;
+        if (result.success) {
+          const categoriesData = result.data.map((category: CategoryResponse) => ({
+            id: category.id,
+            title: category.title,
+            description: category.description
+          }));
+          
+          setCategories(categoriesData);
+          
+          // Set default category if available
+          if (categoriesData.length > 0 && !formState.categoryId) {
+            setFormState(prev => ({
+              ...prev,
+              categoryId: categoriesData[0].id
+            }));
+          }
+        } else {
+          throw new Error(result.message || 'Failed to fetch categories');
+        }
+      } catch (error) {
         console.error("Error fetching categories:", error);
-        setError(`Failed to load categories: ${error.message}`);
+        setError(`Failed to load categories: ${error}`);
         toast.error("Failed to load categories");
+      } finally {
         setIsLoadingCategories(false);
-      });
+      }
+    };
 
-      return () => unsubscribe();
-    } catch (error) {
-      console.error("Exception when setting up category listener:", error);
-      setError(`Exception when fetching categories: ${error}`);
-      setIsLoadingCategories(false);
-    }
-  }, [formState.categoryId]);
+    fetchCategories();
+  }, []);
+
   // Handle image selection
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -112,62 +98,56 @@ export default function useBlogForm() {
     }));
   };
 
-  // Function to close modal and reset form
+  // Function to close modal
   const handleCloseModal = () => {
     setIsSuccessModalOpen(false);
   };
 
-  // Function to save blog to Firestore
-  const saveBlogToFirestore = async (blogData: BlogPost) => {
+  // Function to save blog to API
+  const saveBlogToAPI = async (blogData: BlogPost) => {
     try {
-    // Create blog data without slug first
-      const blogDataWithoutSlug = {
-        ...blogData,
-        slug: '' // Temporarily empty
-      };
-
-      // Store the blog post in the main "blogs" collection first
-      const blogDocRef = await addDoc(collection(db, "blogs"), blogDataWithoutSlug);
-      
-      // Update the blog post with the slug as the document ID
-      await updateDoc(blogDocRef, {
-        slug: blogDocRef.id
+      const response = await fetch('http://localhost:4000/api/blogs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: blogData.title,
+          content: blogData.content,
+          categoryId: blogData.categoryId,
+          imageUrl: blogData.imageUrl || null
+        })
       });
 
-      // Also store a reference to this blog in the category's blogs subcollection
-      const categoryBlogData: CategoryBlogData = {
-        blogId: blogDocRef.id,
-        title: blogData.title,
-        content: blogData.content.substring(0, 200) + (blogData.content.length > 200 ? '...' : ''), // Store a preview
-        imageUrl: blogData.imageUrl || null, // Handle the case when no image
-        createdAt: blogData.createdAt,
-        isVerified: blogData.isVerified,
-        slug: blogDocRef.id
-      };
-      
-      await addDoc(collection(db, "categories", blogData.categoryId, "blogs"), categoryBlogData);
-      
-      // Reset form
-      setFormState({
-        title: '',
-        categoryId: categories.length > 0 ? categories[0].id : '',
-        content: '',
-        image: null,
-        imagePreview: null
-      });
-      
-      // If you have a file input ref, you can reset it
-      if (document.getElementById('imageInput') as HTMLInputElement) {
-        (document.getElementById('imageInput') as HTMLInputElement).value = '';
+      if (!response.ok) {
+        throw new Error('Failed to create blog post');
       }
-      
-      // Show success modal instead of toast
-      setIsSuccessModalOpen(true);
-      setLoading(false);
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Reset form
+        setFormState({
+          title: '',
+          categoryId: categories.length > 0 ? categories[0].id : '',
+          content: '',
+          image: null,
+          imagePreview: null
+        });
+        
+        // Reset file input
+        if (document.getElementById('imageInput') as HTMLInputElement) {
+          (document.getElementById('imageInput') as HTMLInputElement).value = '';
+        }
+        
+        setIsSuccessModalOpen(true);
+      } else {
+        throw new Error(result.message || 'Failed to create blog post');
+      }
     } catch (error) {
-      console.error("Error saving blog post to Firestore:", error);
+      console.error("Error saving blog post:", error);
       toast.error("வலைப்பதிவை சேமிப்பதில் பிழை");
-      setLoading(false);
+      throw error;
     }
   };
 
@@ -195,63 +175,25 @@ export default function useBlogForm() {
     }
     
     setLoading(true);
-      try {
-      // Create blog post object
+
+    try {
       const blogData: BlogPost = {
         title: trimmedTitle,
         categoryId: formState.categoryId,
-        content: trimmedContent,
-        createdAt: serverTimestamp(),
-        isVerified: false, // Initially set to not verified
-        slug: '' // This will be updated with the document ID after creation
+        content: trimmedContent
+        // Remove imageUrl if it's not set
       };
-      
-      // Handle image upload if an image was selected
+
       if (formState.image) {
-        // 1. Upload image to Firebase Storage
-        const storage = getStorage();
-        const timestamp = new Date().getTime();
-        const imageFileName = `blog_images/${formState.categoryId}/${timestamp}_${formState.image.name}`;
-        const storageRef = ref(storage, imageFileName);
-        
-        const uploadTask = uploadBytesResumable(storageRef, formState.image);
-        
-        // Handle the upload and save blog post
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
-            // Progress monitoring (optional)
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            console.log(`Upload is ${progress}% done`);
-          },
-          (error) => {
-            // Error handling
-            console.error("Error uploading image:", error);
-            toast.error("படம் பதிவேற்றுவதில் பிழை");
-            setLoading(false);
-          },
-          async () => {
-            // Upload completed successfully
-            try {
-              // Get the download URL
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              
-              // Add the image URL to the blog data
-              blogData.imageUrl = downloadURL;
-              
-              // Save the blog data to Firestore
-              await saveBlogToFirestore(blogData);
-            } catch (error) {
-              console.error("Error saving blog post:", error);
-              toast.error("வலைப்பதிவை சேமிப்பதில் பிழை");
-              setLoading(false);
-            }
-          }
-        );
-      } else {
-        // No image, just save the blog data
-        await saveBlogToFirestore(blogData);
+        // Handle image upload here if needed
+        // You'll need to implement your own image upload logic to your server
+        // and get back the imageUrl
+        // Then add it to blogData:
+        // blogData.imageUrl = uploadedImageUrl;
       }
+
+      await saveBlogToAPI(blogData);
+      setLoading(false);
     } catch (error) {
       console.error("Error adding blog:", error);
       toast.error("வலைப்பதிவு சேர்ப்பதில் பிழை. மீண்டும் முயற்சிக்கவும்.");

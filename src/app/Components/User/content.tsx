@@ -1,37 +1,36 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, getDocs, where, limit, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import Image from "next/image";
+
 
 // Define types
 interface Category {
   id: string;
-  name: string;
+  title: string;  // Changed from name to title to match API
+  description: string;
 }
 
 interface BlogPost {
+  slug: string;
   id: string;
   title: string;
   content: string;
-  imageUrl?: string;
-  createdAt: Date;
+  imageUrl: string | null;
   categoryId: string;
   isVerified: boolean;
-  slug: string;
+  createdAt: string;  // Changed to string since API returns ISO date string
 }
 
 export function ViewBlogPage() {
-  // State for blogs and categories
   const [, setRecentBlogs] = useState<BlogPost[]>([]);
   const [filteredBlogs, setFilteredBlogs] = useState<BlogPost[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingBlogs, setIsLoadingBlogs] = useState(true);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [displayCount, setDisplayCount] = useState(8); // Default to mobile count
+  const [displayCount, setDisplayCount] = useState(8);
 
   // Detect screen size and set display count accordingly
   useEffect(() => {
@@ -54,143 +53,72 @@ export function ViewBlogPage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Fetch categories
+  // Fetch categories from API
   useEffect(() => {
-    setIsLoadingCategories(true);
-
-    try {
-      const q = query(
-        collection(db, "categories"),
-        orderBy("name", "asc")
-      );
-
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const categoriesData: Category[] = [];
-        querySnapshot.forEach((doc) => {
-          categoriesData.push({
-            id: doc.id,
-            name: doc.data().name,
-          });
-        });
-
-        setCategories(categoriesData);
-        setIsLoadingCategories(false);
-      }, (error) => {
-        console.error("Error fetching categories:", error);
-        setError("Failed to load categories");
-        setIsLoadingCategories(false);
-      });
-
-      return () => unsubscribe();
-    } catch (error) {
-      console.error("Exception when setting up category listener:", error);
-      setError(`Exception when fetching categories: ${error}`);
-      setIsLoadingCategories(false);
-    }
-  }, []);
-
-  // Fetch the latest blogs - modified to fetch based on displayCount
-  useEffect(() => {
-    const fetchRecentBlogs = async () => {
-      setIsLoadingBlogs(true);
-      try { 
-        // First attempt: try with a compound query that requires an index
-        try {
-          const q = query(
-            collection(db, "blogs"),
-            where("isVerified", "==", true),
-            orderBy("createdAt", "desc"),
-            limit(displayCount)
-          );
-
-          const querySnapshot = await getDocs(q);
-          const blogsData: BlogPost[] = [];
-
-          querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            blogsData.push({
-              id: doc.id,
-              title: data.title,
-              content: data.content,
-              imageUrl: data.imageUrl,
-              createdAt: data.createdAt?.toDate?.() || null,
-              categoryId: data.categoryId,
-              isVerified: data.isVerified,
-              slug: data.slug
-            });
-          });
-
-          setRecentBlogs(blogsData);
-          setFilteredBlogs(blogsData);
-        } catch (indexError) {
-          console.error("Index error:", indexError);
-
-          // If we get an index error, try a simpler query as a fallback
-          if (indexError instanceof Error && indexError.message.includes("requires an index")) {
-            console.log("Falling back to simpler query without compound index requirement");
-
-            // Fetch more to ensure we have enough after client-side filtering
-            const fallbackLimit = displayCount + 10;
-
-            const fallbackQ = query(
-              collection(db, "blogs"),
-              orderBy("createdAt", "desc"),
-              limit(fallbackLimit)
-            );
-
-            const fallbackSnapshot = await getDocs(fallbackQ);
-            const allBlogsData: BlogPost[] = [];
-
-            fallbackSnapshot.forEach((doc) => {
-              const data = doc.data();
-              allBlogsData.push({
-                id: doc.id,
-                title: data.title,
-                content: data.content,
-                imageUrl: data.imageUrl,
-                createdAt: data.createdAt?.toDate?.() || null,
-                categoryId: data.categoryId,
-                isVerified: data.isVerified || false,
-                slug: data.slug
-              });
-            });
-
-            // Filter verified blogs client-side and take the required amount
-            const verifiedBlogs = allBlogsData
-              .filter(blog => blog.isVerified)
-              .slice(0, displayCount);
-
-            setRecentBlogs(verifiedBlogs);
-            setFilteredBlogs(verifiedBlogs);
-
-            // Set a specific error to guide the user to create indexes
-            setError(
-              "Firebase indexes need to be created. Click the link in the console error message to create the required indexes."
-            );
-          } else {
-            throw indexError; // Re-throw if it's not an index error
-          }
+    const fetchCategories = async () => {
+      setIsLoadingCategories(true);
+      try {
+        const response = await fetch('http://localhost:4000/api/categories');
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+        const result = await response.json();
+        if (result.success) {
+          setCategories(result.data);
+        } else {
+          throw new Error(result.message || 'Failed to fetch categories');
         }
       } catch (error) {
-        console.error("Error fetching recent blogs:", error);
-        if (error instanceof Error) {
-          setError(`Failed to load recent blogs: ${error.message}`);
-        } else {
-          setError("Failed to load recent blogs: An unknown error occurred.");
-        }
-        setIsLoadingBlogs(false);
+        console.error("Error fetching categories:", error);
+        setError("Failed to load categories");
+      } finally {
+        setIsLoadingCategories(false);
       }
-      setIsLoadingBlogs(false);
     };
 
-    fetchRecentBlogs();
-  }, [displayCount]); // Re-fetch when displayCount changes
+    fetchCategories();
+  }, []);
+
+  // Fetch blogs from API
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      setIsLoadingBlogs(true);
+      try {
+        const response = await fetch('http://localhost:4000/api/blogs');
+        if (!response.ok) {
+          throw new Error('Failed to fetch blogs');
+        }
+        
+        const result = await response.json();
+        if (result.success) {
+          const blogsData = result.data
+            .filter((blog: BlogPost) => blog.isVerified)
+            .slice(0, displayCount);
+          
+          setRecentBlogs(blogsData);
+          setFilteredBlogs(blogsData);
+        } else {
+          throw new Error(result.message || 'Failed to fetch blogs');
+        }
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+        setError("Failed to load blogs");
+      } finally {
+        setIsLoadingBlogs(false);
+      }
+    };
+
+    fetchBlogs();
+  }, [displayCount]);
 
   // Find category name by ID
   const getCategoryName = (categoryId: string) => {
     const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.name : "Unknown Category";
+    return category ? category.title : "Unknown Category";
   };
+
+  // Format date for display
+ 
 
   // Truncate content for preview
   const truncateContent = (content: string, maxLength: number = 150) => {
@@ -205,13 +133,13 @@ export function ViewBlogPage() {
         <div className="max-w-7xl mx-auto py-12 px-6 md:px-8">
           {/* Blog Heading with View More link */}
           <div className="flex flex-col md:flex-row md:justify-between items-center mb-10">
-            <h1 className="text-2xl sm:text-3xl md:text-5xl font-serif font-bold text-gray-800 tracking-wider text-center mb-4">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-serif font-bold text-gray-800 tracking-wider text-center mb-4 md:mb-0">
               வலைப்பதிவுகள்
             </h1>
-            {/* View More link in header - right aligned (visible only on desktop) */}
-            <Link
-              href="/dashboard"
-              className="text-gray-800 underline hover:text-gray-600 font-medium transition-colors hidden md:block"
+            {/* Desktop View More link */}
+            <Link 
+              href="/dashboard" 
+              className="hidden md:inline-block text-blue-800 hover:text-blue-600 underline font-medium transition-colors"
             >
               View More
             </Link>
@@ -264,7 +192,7 @@ export function ViewBlogPage() {
               {filteredBlogs.map((blog) => (
                 <div key={blog.id} className="bg-white mt-5 mb-5 border border-black shadow-sm hover:shadow-md transition-shadow">
                   {/* Blog Image */}
-                  <Link href={`/blog/${blog.slug}`}>
+                  <Link href={`/blog/${blog.id}`}>
                     <div className="relative h-60 w-full overflow-hidden">
                       {blog.imageUrl ? (
                         <Image
@@ -288,7 +216,7 @@ export function ViewBlogPage() {
 
                   {/* Blog Content - Matching the design from the image */}
                   <div className="p-8">
-                    <Link href={`/blog/${blog.slug}`}>
+                    <Link href={`/blog/${blog.id}`}>
                       <h2
                         className="text-2xl font-serif font-bold text-gray-800 mb-4 hover:underline"
                         style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
@@ -304,10 +232,10 @@ export function ViewBlogPage() {
                       {getCategoryName(blog.categoryId)}
                     </span><br />
                     <Link
-                    href={`/blog/${blog.slug}`}
+                    href={`/blog/${blog.id}`}
                     className="text-blue-600 font-medium hover:underline text-sm sm:text-base"
                 >
-                    View More → 
+                    View More →
                 </Link>
                 
                   </div>
@@ -321,7 +249,7 @@ export function ViewBlogPage() {
             <div className="flex justify-center mt-8 md:hidden">
               <Link
                 href="/dashboard"
-                className="text-gray-800 underline hover:text-gray-600 font-medium transition-colors"
+                className="text-blue-800 hover:text-blue-600 underline font-medium transition-colors flex items-center gap-1"
               >
                 View More
               </Link>
