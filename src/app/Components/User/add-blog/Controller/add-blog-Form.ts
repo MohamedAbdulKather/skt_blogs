@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BlogPost, Category, FormState, CategoryResponse, ApiResponse } from '../model/add-blog';
+import {  Category, FormState, CategoryResponse, ApiResponse } from '../model/add-blog';
 import { toast } from 'react-toastify';
 
 export default function useBlogForm() {
@@ -103,20 +103,15 @@ export default function useBlogForm() {
     setIsSuccessModalOpen(false);
   };
 
+  // Function to upload image and get URL
+  
+
   // Function to save blog to API
-  const saveBlogToAPI = async (blogData: BlogPost) => {
+  const saveBlogToAPI = async (blogData: FormData): Promise<void> => {
     try {
       const response = await fetch('http://localhost:4000/api/blogs', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: blogData.title,
-          content: blogData.content,
-          categoryId: blogData.categoryId,
-          imageUrl: blogData.imageUrl || null
-        })
+        body: blogData,
       });
 
       if (!response.ok) {
@@ -136,11 +131,12 @@ export default function useBlogForm() {
         });
         
         // Reset file input
-        if (document.getElementById('imageInput') as HTMLInputElement) {
-          (document.getElementById('imageInput') as HTMLInputElement).value = '';
+        const fileInput = document.getElementById('imageInput') as HTMLInputElement;
+        if (fileInput) {
+          fileInput.value = '';
         }
         
-        setIsSuccessModalOpen(true);
+        toast.success('வலைப்பதிவு வெற்றிகரமாக சேர்க்கப்பட்டது!');
       } else {
         throw new Error(result.message || 'Failed to create blog post');
       }
@@ -177,22 +173,17 @@ export default function useBlogForm() {
     setLoading(true);
 
     try {
-      const blogData: BlogPost = {
-        title: trimmedTitle,
-        categoryId: formState.categoryId,
-        content: trimmedContent
-        // Remove imageUrl if it's not set
-      };
+      // Create FormData object to handle file upload
+      const formData = new FormData();
+      formData.append('title', trimmedTitle);
+      formData.append('categoryId', formState.categoryId);
+      formData.append('content', trimmedContent);
 
       if (formState.image) {
-        // Handle image upload here if needed
-        // You'll need to implement your own image upload logic to your server
-        // and get back the imageUrl
-        // Then add it to blogData:
-        // blogData.imageUrl = uploadedImageUrl;
+        formData.append('image', formState.image);
       }
 
-      await saveBlogToAPI(blogData);
+      await saveBlogToAPI(formData);
       setLoading(false);
     } catch (error) {
       console.error("Error adding blog:", error);

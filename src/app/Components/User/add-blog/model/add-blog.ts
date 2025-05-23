@@ -1,5 +1,3 @@
-import { FieldValue, Timestamp } from 'firebase/firestore';
-
 export interface Category {
     id: string;
     title: string;
@@ -10,7 +8,10 @@ export interface BlogPost {
   title: string;
   categoryId: string;
   content: string;
-  imageUrl?: string; // Make it optional with string type only
+  imageUrl?: string;
+  createdAt?: Date;
+  isVerified?: boolean;
+  slug?: string;
 }
   
 export interface CategoryBlogData {
@@ -18,7 +19,7 @@ export interface CategoryBlogData {
   title: string;
   content: string;
   imageUrl: string | null;
-  createdAt: FieldValue | Timestamp; 
+  createdAt: Date; 
   isVerified: boolean;
   slug: string;
 }

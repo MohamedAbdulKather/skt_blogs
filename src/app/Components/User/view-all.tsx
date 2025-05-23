@@ -277,7 +277,7 @@ export function ViewAllBlogs() {
                   {/* Blog Content */}
                   <div className="p-8">
                     <Link href={`/blog/${blog.id}`}>
-                      <h2 className="text-2xl md:text-2xl sm:text-3xl font-serif font-bold text-gray-800 mb-4 hover:underline">
+                      <h2 className="text-2xl md:text-2xl sm:text-3xl font-serif font-bold text-gray-800 mb-4 hover:underline break-words overflow-wrap-anywhere leading-normal">
                         {blog.title}
                       </h2>
                     </Link>
